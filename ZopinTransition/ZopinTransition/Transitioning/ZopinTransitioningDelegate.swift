@@ -9,6 +9,7 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
         self.presentationDuration = presentationDuration
         self.dismissalDuration = dismissalDuration
         super.init()
+        transitionableViewController.navigationController?.modalPresentationStyle = .custom
         transitionableViewController.modalPresentationStyle = .custom
     }
     
