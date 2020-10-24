@@ -73,7 +73,7 @@ public class TransitioningView: NSObject {
     var priority: Int // 0 - Int.max
     var config: TransitioningViewConfig
 
-    init(view: UIView, transitionStyle: TransitioningStyle, priority: Int, config: TransitioningViewConfig = TransitioningViewConfig()) {
+    public init(view: UIView, transitionStyle: TransitioningStyle, priority: Int, config: TransitioningViewConfig = TransitioningViewConfig()) {
         self.view = view
         self.transitionStyle = transitionStyle
         self.priority = max(priority, 0)
@@ -105,7 +105,7 @@ public struct TransitioningViewConfig {
     var hideSubviews: Bool
     var mask: TransitioningView?
 
-    init(relativeDuration: TimeInterval = 1, relativeDelay: TimeInterval = 0, hideSubviews: Bool = false, mask: TransitioningView? = nil) {
+    public init(relativeDuration: TimeInterval = 1, relativeDelay: TimeInterval = 0, hideSubviews: Bool = false, mask: TransitioningView? = nil) {
         self.relativeDuration = relativeDuration
         self.relativeDelay = relativeDelay
         self.hideSubviews = hideSubviews
