@@ -1,0 +1,6 @@
+framework module Pods_ZopinTransition {
+  umbrella header "Pods-ZopinTransition-umbrella.h"
+
+  export *
+  module * { export * }
+}
