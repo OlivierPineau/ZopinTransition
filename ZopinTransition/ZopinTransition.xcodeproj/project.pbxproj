@@ -16,6 +16,7 @@
 		89F81FAB2544AED00035970E /* ZopinSnapshotter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F81FAA2544AED00035970E /* ZopinSnapshotter.swift */; };
 		89F81FAF2544AEE80035970E /* SnapshotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F81FAD2544AEE70035970E /* SnapshotView.swift */; };
 		89F81FB02544AEE80035970E /* TransitioningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F81FAE2544AEE70035970E /* TransitioningView.swift */; };
+		89F81FB22544C4810035970E /* ZopinTransitioningDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F81FB12544C4810035970E /* ZopinTransitioningDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		89F81FAA2544AED00035970E /* ZopinSnapshotter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZopinSnapshotter.swift; sourceTree = "<group>"; };
 		89F81FAD2544AEE70035970E /* SnapshotView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SnapshotView.swift; sourceTree = "<group>"; };
 		89F81FAE2544AEE70035970E /* TransitioningView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransitioningView.swift; sourceTree = "<group>"; };
+		89F81FB12544C4810035970E /* ZopinTransitioningDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZopinTransitioningDelegate.swift; sourceTree = "<group>"; };
 		D38B1449490016C51C35D444 /* Pods-ZopinTransition.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZopinTransition.debug.xcconfig"; path = "Target Support Files/Pods-ZopinTransition/Pods-ZopinTransition.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -100,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				89F81FA52544AEB00035970E /* ZopinTransitioning.swift */,
+				89F81FB12544C4810035970E /* ZopinTransitioningDelegate.swift */,
 			);
 			path = Transitioning;
 			sourceTree = "<group>";
@@ -241,6 +244,7 @@
 				89F81FA62544AEB00035970E /* ZopinTransitioning.swift in Sources */,
 				89F81FA22544AE7F0035970E /* UICollectionView+ZopinTransition.swift in Sources */,
 				89F81FB02544AEE80035970E /* TransitioningView.swift in Sources */,
+				89F81FB22544C4810035970E /* ZopinTransitioningDelegate.swift in Sources */,
 				89F81FA32544AE7F0035970E /* UIView+ZopinTransition.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
