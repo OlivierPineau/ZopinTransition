@@ -78,11 +78,12 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         transitioningSnapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
+            fOverlayViews.forEach { $0.view.alpha = 0 }
             fromViews.forEach { $0.view.alpha = 0 }
         } else {
+            tOverlayViews.forEach { $0.view.alpha = 0 }
             toViews.forEach { $0.view.alpha = 0 }
         }
-
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: UICubicTimingParameters(animationCurve: .easeInOut))
 
         let groupedByRelativeDelays = transitioningSnapshotter.groupedByDelays
@@ -115,8 +116,10 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             strongSelf.transitioningSnapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
 
             if strongSelf.isPresenting {
+                fOverlayViews.forEach { $0.view.alpha = 1 }
                 fromViews.forEach { $0.view.alpha = 1 }
             } else {
+                tOverlayViews.forEach { $0.view.alpha = 1 }
                 toViews.forEach { $0.view.alpha = 1 }
             }
 

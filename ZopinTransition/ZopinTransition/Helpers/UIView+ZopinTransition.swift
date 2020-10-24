@@ -95,7 +95,13 @@ extension UIView {
         layers.enumerated().forEach { (index, layer) in
             if subviewsLayers.contains(layer) {
                 let subviewCopy = subviews[index - offset].copyView(hideSubviews: hideSubviews)
-                copy.addSubview(subviewCopy)
+                
+                if let visualEffectView = copy as? UIVisualEffectView {
+                    visualEffectView.contentView.addSubview(subviewCopy)
+                } else {
+                    copy.addSubview(subviewCopy)
+                }
+
             } else {
                 let layerCopy = layer.zopinCopy(hideSubviews: hideSubviews)
                 copy.layer.addSublayer(layerCopy)
