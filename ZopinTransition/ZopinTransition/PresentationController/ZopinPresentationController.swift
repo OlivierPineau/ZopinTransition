@@ -1,17 +1,17 @@
 import Foundation
 import UIKit
 
-final class ZopinPresentationController: UIPresentationController {
-    override var frameOfPresentedViewInContainerView: CGRect {
+public final class ZopinPresentationController: UIPresentationController {
+    public override var frameOfPresentedViewInContainerView: CGRect {
         return containerView?.frame ?? .zero
     }
 
-    override func containerViewWillLayoutSubviews() {
+    public override func containerViewWillLayoutSubviews() {
         super.containerViewWillLayoutSubviews()
         presentedView?.frame = frameOfPresentedViewInContainerView
     }
 
-    override var presentedView: UIView? {
+    public override var presentedView: UIView? {
         let presentedView = super.presentedView
 
         // HACK: This is a workaround for the bug described in: http://openradar.appspot.com/18005149

@@ -2,15 +2,15 @@ import Foundation
 import MRGTaylor
 import UIKit
 
-typealias TransitionableViewController = UIViewController & Transitionable
-typealias TransitionableView = UIView & Transitionable
+public typealias TransitionableViewController = UIViewController & Transitionable
+public typealias TransitionableView = UIView & Transitionable
 
 @objc
-protocol Transitionable {
+public protocol Transitionable {
     @objc optional func transitioningView(transitionableViewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
-final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
+public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
     private let duration: TimeInterval
     private let isPresenting: Bool
     private var transitioningSnapshotter: ZopinSnapshotter!
@@ -22,23 +22,23 @@ final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning,
         super.init()
     }
 
-    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+    public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return duration
     }
 
-    var wantsInteractiveStart: Bool {
+    public var wantsInteractiveStart: Bool {
         return false
     }
 
-    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+    public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         interruptibleAnimator(using: transitionContext).startAnimation()
     }
 
-    func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
         interruptibleAnimator(using: transitionContext).startAnimation()
     }
 
-    func interruptibleAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating {
+    public func interruptibleAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating {
         if let currentAnimator = currentAnimator {
             return currentAnimator
         }

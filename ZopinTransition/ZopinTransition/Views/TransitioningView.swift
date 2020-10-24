@@ -2,16 +2,16 @@ import Foundation
 import UIKit
 
 @objc
-enum TranslationDirection: Int {
+public enum TranslationDirection: Int {
     case up, down, left, right
 }
 
 @objc
-enum TranslationAxis: Int {
+public enum TranslationAxis: Int {
     case vertical, horizontal
 }
 
-enum AlphaChangeStrategy {
+public enum AlphaChangeStrategy {
     case none
     case fade(alphaChange: CGFloat)
     case cascade(delay: TimeInterval, alphaChange: CGFloat)
@@ -41,7 +41,7 @@ enum AlphaChangeStrategy {
     }
 }
 
-enum TransitioningStyle {
+public enum TransitioningStyle {
     case fade
     case moveWith(parent: TransitioningView, crossFades: Bool)
     case match(id: String, crossFades: Bool)
@@ -67,7 +67,7 @@ enum TransitioningStyle {
     }
 }
 
-class TransitioningView: NSObject {
+public class TransitioningView: NSObject {
     var view: UIView
     var transitionStyle: TransitioningStyle
     var priority: Int // 0 - Int.max
@@ -82,7 +82,7 @@ class TransitioningView: NSObject {
     }
 }
 
-extension TransitioningView {
+public extension TransitioningView {
     var alphaChange: CGFloat {
         switch transitionStyle {
         case .moveWith(_, let crossFades),
@@ -99,7 +99,7 @@ extension TransitioningView {
     }
 }
 
-struct TransitioningViewConfig {
+public struct TransitioningViewConfig {
     var relativeDuration: TimeInterval
     var relativeDelay: TimeInterval
     var hideSubviews: Bool

@@ -2,10 +2,6 @@ import Foundation
 import UIKit
 
 extension UIView {
-//    func copyView(shouldHideSubviews: Bool) -> UIView? {
-//        return zopinCopy(hideSubviews: shouldHideSubviews)
-//    }
-
     func snapshot(shouldHideSubviews: Bool) -> UIView? {
         let visibleSubviews = subviews.filter { $0.alpha == 1 }
 
