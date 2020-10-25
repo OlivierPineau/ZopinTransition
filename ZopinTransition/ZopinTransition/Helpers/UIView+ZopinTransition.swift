@@ -84,10 +84,6 @@ extension UIView {
 
         guard !hideSubviews else { return copy }
 
-        if copy is UIVisualEffectView {
-            return copy
-        }
-
         let layers = layer.sublayers ?? []
         let subviewsLayers = subviews.map { $0.layer }
 
