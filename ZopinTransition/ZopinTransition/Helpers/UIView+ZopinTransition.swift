@@ -2,60 +2,6 @@ import Foundation
 import UIKit
 
 extension UIView {
-    func snapshot(shouldHideSubviews: Bool) -> UIView? {
-        let visibleSubviews = subviews.filter { $0.alpha == 1 }
-
-        if shouldHideSubviews {
-            visibleSubviews.forEach { $0.alpha = 0 }
-        }
-
-        var finalSnapshot = snapshotView(afterScreenUpdates: true)
-        finalSnapshot?.clipsToBounds = true
-        finalSnapshot?.cornerRadius = cornerRadius
-
-        // Snapshot view returns a view where the corner radius is 0
-        // In order to have the corner radius and the shadow of the snapshotted view
-        // We need to have the snapshot inside a container view,
-        // The `SnapshotView` is responsable to resize the snapshot when its frame changes
-        finalSnapshot = SnapshotView(snapshot: finalSnapshot)
-
-        finalSnapshot?.setShadow(radius: layer.shadowRadius, offset: layer.shadowOffset, opacity: CGFloat(layer.shadowOpacity), color: UIColor(cgColor: layer.shadowColor ?? UIColor.clear.cgColor))
-        finalSnapshot?.layer.shadowPath = layer.shadowPath
-
-        if shouldHideSubviews {
-            visibleSubviews.forEach { $0.alpha = 1 }
-        }
-
-        return finalSnapshot
-    }
-
-    func snapshotContent() -> UIView {
-        let container = UIView(frame: frame)
-        container.backgroundColor = .clear
-
-        let snapshots = subviews.compactMap({ (view) -> UIView? in
-            let snapshot = view.snapshot(shouldHideSubviews: false)
-            snapshot?.frame = view.frame
-            return snapshot
-        })
-        snapshots.forEach { container.addSubview($0) }
-        return container
-    }
-}
-
-extension UINavigationBar {
-    func snapshotNavigationBar() -> UIView {
-        return snapshotContent()
-    }
-}
-
-extension UITabBar {
-    func snapshotTabBar() -> UIView {
-        return snapshotContent()
-    }
-}
-
-extension UIView {
     func copyView(hideSubviews: Bool) -> UIView {
         let copy = extractCopy()
         copy.alpha = alpha
@@ -82,7 +28,7 @@ extension UIView {
         copy.layer.shadowRadius = layer.shadowRadius
         copy.layer.shadowOpacity = layer.shadowOpacity
 
-        guard !hideSubviews else { return copy }
+        guard !hideSubviews else { return SnapshotView(snapshot: copy) }
 
         let layers = layer.sublayers ?? []
         let subviewsLayers = subviews.map { $0.layer }
@@ -100,12 +46,12 @@ extension UIView {
 
             } else {
                 let layerCopy = layer.zopinCopy(hideSubviews: hideSubviews)
-                copy.layer.addSublayer(layerCopy)
+                copy.addSubview(SnapshotLayerView(snapshotLayer: layerCopy))
                 offset += 1
             }
         }
 
-        return copy
+        return SnapshotView(snapshot: copy)
     }
 
     private func extractCopy() -> UIView {
@@ -133,6 +79,7 @@ extension CALayer {
         copy.isHidden = isHidden
         copy.frame = frame
         copy.backgroundColor = backgroundColor
+        copy.isOpaque = isOpaque
         copy.borderWidth = borderWidth
         copy.borderColor = borderColor
         copy.cornerRadius = cornerRadius
@@ -142,7 +89,15 @@ extension CALayer {
         copy.shadowOffset = shadowOffset
         copy.shadowRadius = shadowRadius
         copy.shadowOpacity = shadowOpacity
-
+        copy.contents = contents
+        copy.contentsRect = contentsRect
+        copy.contentsGravity = contentsGravity
+        copy.contentsScale = contentsScale
+        copy.contentsCenter = contentsCenter
+        copy.contentsFormat = contentsFormat
+                
+        copy.needsDisplayOnBoundsChange = true
+        
         return copy
     }
 
