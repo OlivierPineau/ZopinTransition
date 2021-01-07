@@ -7,7 +7,7 @@ public typealias TransitionableView = UIView & Transitionable
 
 @objc
 public protocol Transitionable {
-    @objc optional func transitioningView(transitionableViewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
+    func transitioningViews(forTransitionWith viewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
 public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
@@ -18,7 +18,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
     init(isPresenting: Bool, duration: TimeInterval = 0.35) {
         self.isPresenting = isPresenting
-        self.duration = duration * 10
+        self.duration = duration
         super.init()
     }
 
@@ -63,13 +63,8 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             setupDismissalContainer(context: transitionContext)
         }
 
-        guard let fromViews = fromViewController.transitioningView?(transitionableViewController: toViewController, isDestination: false),
-              let toViews = toViewController.transitioningView?(transitionableViewController: fromViewController, isDestination: true)
-        else {
-            print("Failed to complete transition: \(self)")
-            transitionContext.completeTransition(false)
-            return UIViewPropertyAnimator(duration: 0, curve: .linear, animations: nil)
-        }
+        let fromViews = fromViewController.transitioningViews(forTransitionWith: toViewController, isDestination: false)
+        let toViews = toViewController.transitioningViews(forTransitionWith: fromViewController, isDestination: true)
 
         let fOverlayViews = extractOverlayViews(viewController: fromVc)
         let tOverlayViews = extractOverlayViews(viewController: toVc)
@@ -188,14 +183,14 @@ extension ZopinTransitioning {
         if let navigationController = viewController as? UINavigationController {
             let navBar = navigationController.navigationBar
             overlayViews.append(
-                TransitioningView(view: navBar, transitionStyle: .moveOut(direction: .up, alphaChangeStrategy: .none), priority: Int.max)
+                TransitioningView(view: navBar, style: .moveOut(direction: .up, alphaChangeStrategy: .none), priority: Int.max)
             )
         }
 
         if let tabBarVc = viewController as? UITabBarController {
             let tabBar = tabBarVc.tabBar
             overlayViews.append(
-                TransitioningView(view: tabBar, transitionStyle: .moveOut(direction: .down, alphaChangeStrategy: .none), priority: Int.max)
+                TransitioningView(view: tabBar, style: .moveOut(direction: .down, alphaChangeStrategy: .none), priority: Int.max)
             )
         }
 
