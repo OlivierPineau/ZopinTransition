@@ -15,8 +15,6 @@ final class ZopinSnapshotter {
         return Dictionary(grouping: fromViews + toViews) { $0.config.relativeDelay }
     }
 
-    var startDate = Date()
-
     init(fViews: [TransitioningView], fOverlayViews: [TransitioningView], tViews: [TransitioningView], tOverlayViews: [TransitioningView], container: UIView, isPresenting: Bool) {
         self.container = container
         self.isPresenting = isPresenting
@@ -25,9 +23,6 @@ final class ZopinSnapshotter {
         let fromMovingViews = fromTransitioningViews
         let toTransitioningViews = extractViews(from: tViews, isFromView: false) + tOverlayViews
         let toMovingViews = toTransitioningViews
-
-        print("ZopinTime: extractview: \(Date().timeIntervalSince1970 - startDate.timeIntervalSince1970)\n")
-        startDate = Date()
 
         let sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
         let snapshots = createSnapshots(transitioningViews: sortedTransitioningViews)
@@ -44,26 +39,17 @@ final class ZopinSnapshotter {
             snapshot.mask = maskSnapshot
         }
 
-        print("ZopinTime: snapshot creation time: \(Date().timeIntervalSince1970 - startDate.timeIntervalSince1970)\n")
-        startDate = Date()
-
         fromViews = sortedTransitioningViews.filter { fromMovingViews.contains($0) }
         fromSnapshots = snapshots.enumerated().filter({ (index, _) -> Bool in
             return fromViews.contains(sortedTransitioningViews[index])
         }).map { $0.element }
         positionFromSnapshots()
 
-        print("ZopinTime: from view setup time: \(Date().timeIntervalSince1970 - startDate.timeIntervalSince1970)\n")
-        startDate = Date()
-
         toViews = sortedTransitioningViews.filter { toMovingViews.contains($0) }
         toSnapshots = snapshots.enumerated().filter({ (index, _) -> Bool in
             return toViews.contains(sortedTransitioningViews[index])
         }).map { $0.element }
         positionToSnapshots()
-
-        print("ZopinTime: end init time: \(Date().timeIntervalSince1970 - startDate.timeIntervalSince1970)\n")
-        startDate = Date()
     }
 }
 
@@ -77,9 +63,9 @@ extension ZopinSnapshotter {
                 continue
             }
 
-            if case .moveOut(let direction, let alphaChangeStrategy) = transitioningView.transitionStyle {
+            if case .moveOut(let direction, let alphaChangeStrategy) = transitioningView.style {
                 finalTransitioningViews.append(
-                    TransitioningView(view: transitioningView.view, transitionStyle: transitioningView.transitionStyle, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
+                    TransitioningView(view: transitioningView.view, style: transitioningView.style, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
                 )
 
                 finalTransitioningViews.append(contentsOf:
@@ -92,9 +78,9 @@ extension ZopinSnapshotter {
                     )
                 )
 
-            } else if case .pageOut(let direction, let alphaChangeStrategy) = transitioningView.transitionStyle {
+            } else if case .pageOut(let direction, let alphaChangeStrategy) = transitioningView.style {
                 finalTransitioningViews.append(
-                    TransitioningView(view: transitioningView.view, transitionStyle: transitioningView.transitionStyle, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
+                    TransitioningView(view: transitioningView.view, style: transitioningView.style, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
                 )
 
                 finalTransitioningViews.append(contentsOf:
@@ -107,7 +93,7 @@ extension ZopinSnapshotter {
                     )
                 )
 
-            } else if case .splitContent(let axis, let centerView, let keepCenterView, let alphaChangeStrategy) = transitioningView.transitionStyle {
+            } else if case .splitContent(let axis, let centerView, let keepCenterView, let alphaChangeStrategy) = transitioningView.style {
                 finalTransitioningViews.append(contentsOf:
                     extractSplitContentViews(
                         axis: axis,
@@ -139,7 +125,7 @@ extension ZopinSnapshotter {
             downRightSubviews = subviews.filter { $0.x > centerView.x }
         }
 
-        baseTransitioningView.transitionStyle = .pageOut(direction: .up, alphaChangeStrategy: alphaChangeStrategy)
+        baseTransitioningView.style = .pageOut(direction: .up, alphaChangeStrategy: alphaChangeStrategy)
         let upLeftTransitioningViews = extractSubviewsIfNeeded(
             subviews: upLeftSubviews,
             baseTransitioningView: baseTransitioningView,
@@ -148,7 +134,7 @@ extension ZopinSnapshotter {
             alphaChangeStrategy: alphaChangeStrategy
         )
 
-        baseTransitioningView.transitionStyle = .pageOut(direction: .down, alphaChangeStrategy: alphaChangeStrategy)
+        baseTransitioningView.style = .pageOut(direction: .down, alphaChangeStrategy: alphaChangeStrategy)
         let downRightTransitioningViews = extractSubviewsIfNeeded(
             subviews: downRightSubviews,
             baseTransitioningView: baseTransitioningView,
@@ -160,7 +146,7 @@ extension ZopinSnapshotter {
         let centerViews = subviews.filter { $0 === centerView && keepCenterView }.map {
             TransitioningView(
                 view: $0,
-                transitionStyle: .fade,
+                style: .fade,
                 priority: baseTransitioningView.priority,
                 config: baseTransitioningView.config
             )
@@ -195,7 +181,7 @@ extension ZopinSnapshotter {
 
             return TransitioningView(
                 view: $0,
-                transitionStyle: baseTransitioningView.transitionStyle,//.pageOut(direction: direction, alphaChangeStrategy: alphaChangeStrategy),
+                style: baseTransitioningView.style,
                 priority: baseTransitioningView.priority,
                 config: config
             )
@@ -253,9 +239,9 @@ extension ZopinSnapshotter {
     }
 
     private func findToViewMatching(fromTransitioningView: TransitioningView) -> TransitioningView? {
-        if case .match(let fromId, _) = fromTransitioningView.transitionStyle {
+        if case .match(let fromId, _) = fromTransitioningView.style {
             return toViews.first(where: { (toTransitioningView) -> Bool in
-                if case .match(let toId, _) = toTransitioningView.transitionStyle {
+                if case .match(let toId, _) = toTransitioningView.style {
                     return fromId == toId
                 }
                 return false
@@ -265,12 +251,12 @@ extension ZopinSnapshotter {
     }
 
     private func findRelatedView(to transitioningview: TransitioningView, in views: [TransitioningView]) -> TransitioningView? {
-        switch transitioningview.transitionStyle {
+        switch transitioningview.style {
         case .match(id: let id, _), .moveTo(id: let id, _):
             return views.first(where: { (view) -> Bool in
-                guard transitioningview.transitionStyle.isSameStyle(as: view.transitionStyle) else { return false }
+                guard transitioningview.style.isSameStyle(as: view.style) else { return false }
 
-                switch view.transitionStyle {
+                switch view.style {
                 case .match(id: let viewId, _), .moveTo(id: let viewId, _):
                     return id == viewId
                 default:
@@ -329,7 +315,6 @@ extension ZopinSnapshotter {
                 let toSnapshot = toSnapshots[toIndex]
                 toSnapshot.cornerRadius = $0.view.cornerRadius
                 toSnapshot.frame = fromSnapshot.frame
-                //                toSnapshot.layer.shadowPath = UIBezierPath(rect: $0.view.bounds).cgPath
             }
         }
     }
@@ -344,13 +329,13 @@ extension ZopinSnapshotter {
 // MARK: Final positioning
 extension ZopinSnapshotter {
     private func toSnapshotOrigin(toTransitioningView: TransitioningView, toSnapshot: UIView) -> CGPoint {
-        if case .moveOut(let direction, _) = toTransitioningView.transitionStyle {
+        if case .moveOut(let direction, _) = toTransitioningView.style {
             return toTransitioningViewMovingOutStartPoint(toSnapshot: toSnapshot, toTransitioningView: toTransitioningView, direction: direction)
-        } else if case .pageOut(let direction, _) = toTransitioningView.transitionStyle {
+        } else if case .pageOut(let direction, _) = toTransitioningView.style {
             return toTransitioningViewMovingPageOutStartPoint(toSnapshot: toSnapshot, toTransitioningView: toTransitioningView, direction: direction)
         } else if let fromTransitioningView = findRelatedView(to: toTransitioningView, in: fromViews) {
             return calculateToMatchingViewOrigin(fromView: fromTransitioningView, toView: toTransitioningView)
-        } else if case .moveWith(let parent, _) = toTransitioningView.transitionStyle {
+        } else if case .moveWith(let parent, _) = toTransitioningView.style {
             let position = calculateViewOrigin(transitioningView: toTransitioningView)
             guard let tuple = toFinalAppearancesViewTuple(transitioningView: parent), let parentIndex = toViews.firstIndex(of: parent) else { return position }
             let parentOrigin = toSnapshotOrigin(toTransitioningView: toViews[parentIndex], toSnapshot: toSnapshots[parentIndex])
@@ -377,7 +362,7 @@ extension ZopinSnapshotter {
     private func toTransitioningViewMovingOutStartPoint(toSnapshot: UIView, toTransitioningView: TransitioningView, direction: TranslationDirection) -> CGPoint {
         var point = calculateViewOrigin(transitioningView: toTransitioningView)
 
-        let extractedFromParent = toViews.filter { $0.view === toTransitioningView.view.superview && $0.transitionStyle.isSameStyle(as: toTransitioningView.transitionStyle) }.first?.view
+        let extractedFromParent = toViews.filter { $0.view === toTransitioningView.view.superview && $0.style.isSameStyle(as: toTransitioningView.style) }.first?.view
         let isExtractedFromParent = extractedFromParent != nil
 
         let xParentDiff = isExtractedFromParent ? point.x - extractedFromParent!.x : 0
@@ -456,23 +441,21 @@ extension ZopinSnapshotter {
             let fromSnapshot = fromSnapshots[index]
             let startOrigin = fromSnapshot.origin
 
-            if case .match(_, _) = matchingToTransitioningView.transitionStyle {
+            if case .match(_, _) = matchingToTransitioningView.style {
                 fromSnapshot.cornerRadius = matchingToTransitioningView.view.cornerRadius
                 fromSnapshot.alpha = 0
                 let finalOrigin = calculateFromMatchingViewOrigin(fromView: fromView, toView: matchingToTransitioningView)
                 fromSnapshot.frame = CGRect(origin: finalOrigin, size: matchingToTransitioningView.view.size)
-                //                fromSnapshot.layer.shadowPath = UIBezierPath(rect: fromSnapshot.bounds).cgPath
 
                 if let toIndex = toViews.firstIndex(of: matchingToTransitioningView) {
                     let toSnapshot = toSnapshots[toIndex]
                     toSnapshot.cornerRadius = matchingToTransitioningView.view.cornerRadius
                 }
 
-            } else if case .moveTo(_, _) = matchingToTransitioningView.transitionStyle {
+            } else if case .moveTo(_, _) = matchingToTransitioningView.style {
                 fromSnapshot.alpha = 0
                 let finalOrigin = calculateFromMatchingViewOrigin(fromView: fromView, toView: matchingToTransitioningView)
                 fromSnapshot.frame = CGRect(origin: finalOrigin, size: fromView.view.size)
-                //                fromSnapshot.layer.shadowPath = UIBezierPath(rect: fromSnapshot.bounds).cgPath
             }
 
             let originDelta = CGPoint(x: fromSnapshot.x - startOrigin.x, y: fromSnapshot.y - startOrigin.y)
@@ -499,13 +482,13 @@ extension ZopinSnapshotter {
             let startOrigin = snapshot.origin
             let parentSize = snapshot.superview?.size ?? .zero
 
-            let extractedFromParent = fromViews.filter { $0.view === fromView.view.superview && $0.transitionStyle.isSameStyle(as: fromView.transitionStyle) }.first?.view
+            let extractedFromParent = fromViews.filter { $0.view === fromView.view.superview && $0.style.isSameStyle(as: fromView.style) }.first?.view
             let isExtractedFromParent = extractedFromParent != nil
 
             let xParentDiff = isExtractedFromParent ? origin.x - extractedFromParent!.x : 0
             let yParentDiff = isExtractedFromParent ? origin.y - extractedFromParent!.y : 0
 
-            if case .moveOut(let direction, let alphaChangeStrategy) = fromView.transitionStyle {
+            if case .moveOut(let direction, let alphaChangeStrategy) = fromView.style {
                 switch direction {
                 case .up:
                     origin.y -= snapshot.maxY - (isExtractedFromParent ? yParentDiff : 0)
@@ -518,10 +501,9 @@ extension ZopinSnapshotter {
                 }
 
                 snapshot.frame = CGRect(origin: origin, size: fromView.view.size)
-                //                snapshot.layer.shadowPath = UIBezierPath(rect: snapshot.bounds).cgPath
                 snapshot.alpha = 1 - alphaChangeStrategy.alphaChange
 
-            } else if case .pageOut(let direction, let alphaChangeStrategy) = fromView.transitionStyle {
+            } else if case .pageOut(let direction, let alphaChangeStrategy) = fromView.style {
                 switch direction {
                 case .up:
                     origin.y -= parentSize.height
@@ -534,13 +516,12 @@ extension ZopinSnapshotter {
                 }
 
                 snapshot.frame = CGRect(origin: origin, size: fromView.view.size)
-                //                snapshot.layer.shadowPath = UIBezierPath(rect: snapshot.bounds).cgPath
                 snapshot.alpha = 1 - alphaChangeStrategy.alphaChange
 
-            } else if case .moveWith(_, let crossFades) = fromView.transitionStyle {
+            } else if case .moveWith(_, let crossFades) = fromView.style {
                 // Origin move will be done by parent
                 snapshot.alpha = crossFades ? 0 : 1
-            } else if case .fade = fromView.transitionStyle {
+            } else if case .fade = fromView.style {
                 snapshot.alpha = 0
             }
 
@@ -551,7 +532,7 @@ extension ZopinSnapshotter {
 
     private func setupMovingWithParentTransitioningViews(view: TransitioningView, views: [TransitioningView], snapshots: [UIView], originDelta: CGPoint) {
         views.enumerated().compactMap { (index, element) -> Int? in
-            if case .moveWith(let parent, _) = element.transitionStyle {
+            if case .moveWith(let parent, _) = element.style {
                 return view === parent ? index : nil
             }
             return nil
@@ -565,7 +546,7 @@ extension ZopinSnapshotter {
         if let toView = findRelatedView(to: transitioningView, in: toViews), let toIndex = toViews.firstIndex(of: toView) {
             return (toView, toSnapshots[toIndex])
         } else if let toIndex = toViews.firstIndex(of: transitioningView) {
-            switch transitioningView.transitionStyle {
+            switch transitioningView.style {
             case .fade, .moveOut, .pageOut, .moveWith:
                 return (transitioningView, toSnapshots[toIndex])
             default:
@@ -584,18 +565,17 @@ extension ZopinSnapshotter {
             let origin: CGPoint = calculateViewOrigin(transitioningView: finalTransitioningView)
             var size: CGSize = finalTransitioningView.view.size
 
-            if case .match(_, _) = finalTransitioningView.transitionStyle {
+            if case .match(_, _) = finalTransitioningView.style {
                 size = finalTransitioningView.view.size
             }
 
-            if case .moveTo(_, let crossFades) = finalTransitioningView.transitionStyle {
+            if case .moveTo(_, let crossFades) = finalTransitioningView.style {
                 toSnapshot.alpha = crossFades ? 1 : 0
             } else {
                 toSnapshot.alpha = 1
             }
 
             toSnapshot.frame = CGRect(origin: origin, size: size)
-            //            toSnapshot.layer.shadowPath = UIBezierPath(rect: toSnapshot.bounds).cgPath
         }
 
         setupToMasks(views: transitioningViews)

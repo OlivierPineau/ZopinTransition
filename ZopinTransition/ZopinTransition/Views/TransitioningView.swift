@@ -46,7 +46,6 @@ public enum TransitioningStyle {
     case moveWith(parent: TransitioningView, crossFades: Bool)
     case match(id: String, crossFades: Bool)
     case moveTo(id: String, crossFades: Bool)
-    //case moveTo(point: CGPoint, crossFades: Bool)
     case moveOut(direction: TranslationDirection, alphaChangeStrategy: AlphaChangeStrategy)
     case pageOut(direction: TranslationDirection, alphaChangeStrategy: AlphaChangeStrategy)
     case splitContent(axis: TranslationAxis, centerView: UIView, keepCenterView: Bool, alphaChangeStrategy: AlphaChangeStrategy)
@@ -69,13 +68,13 @@ public enum TransitioningStyle {
 
 public class TransitioningView: NSObject {
     var view: UIView
-    var transitionStyle: TransitioningStyle
+    var style: TransitioningStyle
     var priority: Int // 0 - Int.max
     var config: TransitioningViewConfig
 
-    public init(view: UIView, transitionStyle: TransitioningStyle, priority: Int, config: TransitioningViewConfig = TransitioningViewConfig()) {
+    public init(view: UIView, style: TransitioningStyle, priority: Int, config: TransitioningViewConfig = TransitioningViewConfig()) {
         self.view = view
-        self.transitionStyle = transitionStyle
+        self.style = style
         self.priority = max(priority, 0)
         self.config = config
         super.init()
@@ -84,7 +83,7 @@ public class TransitioningView: NSObject {
 
 public extension TransitioningView {
     var alphaChange: CGFloat {
-        switch transitionStyle {
+        switch style {
         case .moveWith(_, let crossFades),
              .match(_, let crossFades),
              .moveTo(_, let crossFades):
