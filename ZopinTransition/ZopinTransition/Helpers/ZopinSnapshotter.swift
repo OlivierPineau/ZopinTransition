@@ -443,7 +443,7 @@ extension ZopinSnapshotter {
 
             if case .match(_, _) = matchingToTransitioningView.style {
                 fromSnapshot.cornerRadius = matchingToTransitioningView.view.cornerRadius
-                fromSnapshot.alpha = 0
+                fromSnapshot.alpha = 1 - matchingToTransitioningView.alphaChange
                 let finalOrigin = calculateFromMatchingViewOrigin(fromView: fromView, toView: matchingToTransitioningView)
                 fromSnapshot.frame = CGRect(origin: finalOrigin, size: matchingToTransitioningView.view.size)
 
@@ -453,7 +453,7 @@ extension ZopinSnapshotter {
                 }
 
             } else if case .moveTo(_, _) = matchingToTransitioningView.style {
-                fromSnapshot.alpha = 0
+                fromSnapshot.alpha = 1 - matchingToTransitioningView.alphaChange
                 let finalOrigin = calculateFromMatchingViewOrigin(fromView: fromView, toView: matchingToTransitioningView)
                 fromSnapshot.frame = CGRect(origin: finalOrigin, size: fromView.view.size)
             }
@@ -522,7 +522,7 @@ extension ZopinSnapshotter {
                 // Origin move will be done by parent
                 snapshot.alpha = crossFades ? 0 : 1
             } else if case .fade = fromView.style {
-                snapshot.alpha = 0
+                snapshot.alpha = 1 - fromView.alphaChange
             }
 
             let originDelta = CGPoint(x: snapshot.x - startOrigin.x, y: snapshot.y - startOrigin.y)

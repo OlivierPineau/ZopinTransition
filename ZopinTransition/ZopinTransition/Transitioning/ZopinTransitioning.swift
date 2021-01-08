@@ -59,8 +59,6 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
         if isPresenting {
             setupPresentationContainer(context: transitionContext)
-        } else {
-            setupDismissalContainer(context: transitionContext)
         }
 
         let fromViews = fromViewController.transitioningViews(forTransitionWith: toViewController, isDestination: false)
@@ -70,6 +68,13 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         let tOverlayViews = extractOverlayViews(viewController: toVc)
 
         transitioningSnapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
+        
+        if isPresenting {
+            setupPresentationContainerAlpha(context: transitionContext)
+        } else {
+            setupDismissalContainerAlpha(context: transitionContext)
+        }
+        
         transitioningSnapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
@@ -168,12 +173,15 @@ extension ZopinTransitioning {
         context.containerView.addSubview(toVc.view)
         toVc.view.setNeedsLayout()
         toVc.view.layoutIfNeeded()
-
-        toVc.view.alpha = 0
         context.containerView.layoutIfNeeded()
     }
+    
+    private func setupPresentationContainerAlpha(context: UIViewControllerContextTransitioning) {
+        guard let toVc = context.viewController(forKey: .to) else { return }
+        toVc.view.alpha = 0
+    }
 
-    private func setupDismissalContainer(context: UIViewControllerContextTransitioning) {
+    private func setupDismissalContainerAlpha(context: UIViewControllerContextTransitioning) {
         guard let fromVc = context.viewController(forKey: .from) else { return }
         fromVc.view.alpha = 0
     }
