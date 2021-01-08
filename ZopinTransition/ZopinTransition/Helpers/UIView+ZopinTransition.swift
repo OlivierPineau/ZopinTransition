@@ -1,4 +1,5 @@
 import Foundation
+import MapKit
 import UIKit
 
 extension UIView {
@@ -76,6 +77,11 @@ extension UIView {
 extension CALayer {
     func zopinCopy(hideSubviews: Bool) -> CALayer {
         let copy = extractCopy()
+        copy.delegate = delegate
+        copy.position = position
+        copy.anchorPoint = anchorPoint
+        copy.zPosition = zPosition
+        copy.transform = transform
         copy.isHidden = isHidden
         copy.frame = frame
         copy.backgroundColor = backgroundColor
@@ -91,12 +97,18 @@ extension CALayer {
         copy.shadowOpacity = shadowOpacity
         copy.contents = contents
         copy.contentsRect = contentsRect
+        copy.contentsScale = contentsScale
+        copy.contentsCenter = contentsCenter
         copy.contentsGravity = contentsGravity
         copy.contentsScale = contentsScale
         copy.contentsCenter = contentsCenter
         copy.contentsFormat = contentsFormat
-                
+        copy.rasterizationScale = rasterizationScale
+        copy.shouldRasterize = shouldRasterize
         copy.needsDisplayOnBoundsChange = true
+        copy.minificationFilter = minificationFilter
+        copy.magnificationFilter = magnificationFilter
+        copy.minificationFilterBias = minificationFilterBias
         
         return copy
     }
@@ -104,6 +116,8 @@ extension CALayer {
     private func extractCopy() -> CALayer {
         if let gradient = self as? CAGradientLayer {
             return gradient.zopinCopy()
+        } else if let shapeLayer = self as? CAShapeLayer {
+            return shapeLayer.zopinCopy()
         }
 
         return CALayer()
@@ -119,6 +133,25 @@ private extension CAGradientLayer {
         gradient.colors = colors
 
         return gradient
+    }
+}
+
+private extension CAShapeLayer {
+    func zopinCopy() -> CAShapeLayer {
+        let shape = CAShapeLayer()
+        shape.path = path
+        shape.fillColor = fillColor
+        shape.fillRule = fillRule
+        shape.lineCap = lineCap
+        shape.lineDashPattern = lineDashPattern
+        shape.lineDashPhase = lineDashPhase
+        shape.lineJoin = lineJoin
+        shape.lineWidth = lineWidth
+        shape.miterLimit = miterLimit
+        shape.strokeColor = strokeColor
+        shape.strokeStart = strokeStart
+        shape.strokeEnd = strokeEnd
+        return shape
     }
 }
 
