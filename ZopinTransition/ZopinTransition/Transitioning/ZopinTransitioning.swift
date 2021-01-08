@@ -13,12 +13,14 @@ public protocol Transitionable {
 public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
     private let duration: TimeInterval
     private let isPresenting: Bool
+    private let timingParameters: UITimingCurveProvider
     private var transitioningSnapshotter: ZopinSnapshotter!
     private var currentAnimator: UIViewImplicitlyAnimating?
 
-    init(isPresenting: Bool, duration: TimeInterval = 0.35) {
+    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut)) {
         self.isPresenting = isPresenting
         self.duration = duration
+        self.timingParameters = timingParameters
         super.init()
     }
 
@@ -84,7 +86,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             tOverlayViews.forEach { $0.view.alpha = 0 }
             toViews.forEach { $0.view.alpha = 0 }
         }
-        let animator = UIViewPropertyAnimator(duration: duration, timingParameters: UICubicTimingParameters(animationCurve: .easeInOut))
+        let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
 
         let groupedByRelativeDelays = transitioningSnapshotter.groupedByDelays
         let relativeDelays = groupedByRelativeDelays.keys.sorted { $0 < $1 }
