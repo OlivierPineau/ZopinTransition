@@ -99,9 +99,6 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
             for relativeDuration in durations {
                 guard let views = groupedByRelativeDuration[relativeDuration] else { continue }
-
-                print("adding anin, duration: \(relativeDuration) delay: \(relativeDelay)")
-
                 animator.addAnimations({ [unowned self] in
                     self.transitioningSnapshotter.setupToFinalAppearances(transitioningViews: views)
                     self.transitioningSnapshotter.setupFromFinalAppearances(views: views)
