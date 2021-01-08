@@ -59,9 +59,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         container.backgroundColor = .clear
         let duration = transitionDuration(using: transitionContext)
 
-        if isPresenting {
-            setupPresentationContainer(context: transitionContext)
-        }
+        setupContainer(context: transitionContext)
 
         let fromViews = fromViewController.transitioningViews(forTransitionWith: toViewController, isDestination: false)
         let toViews = toViewController.transitioningViews(forTransitionWith: fromViewController, isDestination: true)
@@ -80,11 +78,11 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         transitioningSnapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
-            fOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
-            fromViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            fOverlayViews.forEach { $0.view.alpha = 0 }
+            fromViews.forEach { $0.view.alpha = 0 }
         } else {
-            tOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
-            toViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            tOverlayViews.forEach { $0.view.alpha = 0 }
+            toViews.forEach { $0.view.alpha = 0 }
         }
         
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
@@ -167,7 +165,7 @@ extension ZopinTransitioning {
         return nil
     }
 
-    private func setupPresentationContainer(context: UIViewControllerContextTransitioning) {
+    private func setupContainer(context: UIViewControllerContextTransitioning) {
         guard let toVc = context.viewController(forKey: .to) else { return }
         toVc.view.frame = context.finalFrame(for: toVc)
         context.containerView.addSubview(toVc.view)
@@ -175,12 +173,12 @@ extension ZopinTransitioning {
         toVc.view.layoutIfNeeded()
         context.containerView.layoutIfNeeded()
     }
-    
+
     private func setupPresentationContainerAlpha(context: UIViewControllerContextTransitioning) {
         guard let toVc = context.viewController(forKey: .to) else { return }
         toVc.view.alpha = 0
     }
-
+    
     private func setupDismissalContainerAlpha(context: UIViewControllerContextTransitioning) {
         guard let fromVc = context.viewController(forKey: .from) else { return }
         fromVc.view.alpha = 0

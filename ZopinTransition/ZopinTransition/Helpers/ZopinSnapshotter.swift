@@ -24,13 +24,7 @@ final class ZopinSnapshotter {
         let toTransitioningViews = extractViews(from: tViews, isFromView: false) + tOverlayViews
         let toMovingViews = toTransitioningViews
 
-        let sortedTransitioningViews = (fromMovingViews + toMovingViews).filter {
-            if case .keepOriginal = $0.style {
-                return false
-            } else {
-                return true
-            }
-        }.sorted(by: { $0.priority < $1.priority })
+        let sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
         
         let snapshots = createSnapshots(transitioningViews: sortedTransitioningViews)
 
