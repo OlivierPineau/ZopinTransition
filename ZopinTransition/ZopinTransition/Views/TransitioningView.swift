@@ -42,6 +42,7 @@ public enum AlphaChangeStrategy {
 }
 
 public enum TransitioningStyle {
+    case keepOriginal
     case fade
     case moveWith(parent: TransitioningView, crossFades: Bool)
     case match(id: String, crossFades: Bool)
@@ -52,7 +53,8 @@ public enum TransitioningStyle {
 
     func isSameStyle(as transitioningStyle: TransitioningStyle) -> Bool {
         switch (self, transitioningStyle) {
-        case (.fade, .fade),
+        case (.keepOriginal, .keepOriginal),
+             (.fade, .fade),
              (.moveWith, .moveWith),
              (.match, .match),
              (.moveTo, .moveTo),
@@ -88,12 +90,22 @@ public extension TransitioningView {
              .match(_, let crossFades),
              .moveTo(_, let crossFades):
             return crossFades ? 1 : 0
+        case .keepOriginal:
+            return 0
         case .fade:
             return 1
         case .moveOut(_, let alphaChangeStrategy),
              .pageOut(_, let alphaChangeStrategy),
              .splitContent(_, _, _, let alphaChangeStrategy):
             return alphaChangeStrategy.alphaChange
+        }
+    }
+    
+    var originalAlphaChange: CGFloat {
+        if case .keepOriginal = style {
+            return 0
+        } else {
+            return 1
         }
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 final class ZopinSnapshotter {
-    private let container: UIView
+    private weak var container: UIView!
     private let isPresenting: Bool
 
     private var fromViews: [TransitioningView] = []

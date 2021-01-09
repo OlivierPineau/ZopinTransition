@@ -54,6 +54,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             transitionContext.completeTransition(false)
             return UIViewPropertyAnimator(duration: 0, curve: .linear, animations: nil)
         }
+        
+        fromVc.beginAppearanceTransition(false, animated: true)
+        toVc.beginAppearanceTransition(true, animated: true)
 
         let container = transitionContext.containerView
         container.backgroundColor = .clear
@@ -78,11 +81,11 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         transitioningSnapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
-            fOverlayViews.forEach { $0.view.alpha = 0 }
-            fromViews.forEach { $0.view.alpha = 0 }
+            fOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            fromViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
         } else {
-            tOverlayViews.forEach { $0.view.alpha = 0 }
-            toViews.forEach { $0.view.alpha = 0 }
+            tOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            toViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
         }
         
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
@@ -107,7 +110,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
         animator.addCompletion { [weak self] (_) in
             guard let strongSelf = self else {
-                transitionContext.completeTransition(true)
+                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
                 return
             }
             
@@ -124,8 +127,13 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             toVc.view.alpha = 1
             toVc.view.setNeedsLayout()
             toVc.view.layoutIfNeeded()
+            
+            
+            fromVc.endAppearanceTransition()
+            toVc.endAppearanceTransition()
+            
             strongSelf.currentAnimator = nil
-            transitionContext.completeTransition(true)
+            transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         }
 
         self.currentAnimator = animator
