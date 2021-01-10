@@ -69,43 +69,49 @@ extension ZopinSnapshotter {
                     TransitioningView(view: transitioningView.view, style: transitioningView.style, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
                 )
 
-                finalTransitioningViews.append(contentsOf:
-                    extractSubviewsIfNeeded(
-                        subviews: subviews,
-                        baseTransitioningView: transitioningView,
-                        isFromView: isFromView,
-                        direction: direction,
-                        alphaChangeStrategy: alphaChangeStrategy
-                    )
+                let extractedSubViews = extractSubviewsIfNeeded(
+                    subviews: subviews,
+                    baseTransitioningView: transitioningView,
+                    isFromView: isFromView,
+                    direction: direction,
+                    alphaChangeStrategy: alphaChangeStrategy
                 )
+                
+                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
+                
+                finalTransitioningViews.append(contentsOf: extractedSubViews)
 
             } else if case .pageOut(let direction, let alphaChangeStrategy) = transitioningView.style {
                 finalTransitioningViews.append(
                     TransitioningView(view: transitioningView.view, style: transitioningView.style, priority: transitioningView.priority, config: TransitioningViewConfig(relativeDuration: transitioningView.config.relativeDuration, relativeDelay: transitioningView.config.relativeDelay, hideSubviews: true, mask: transitioningView.config.mask))
                 )
-
-                finalTransitioningViews.append(contentsOf:
-                    extractSubviewsIfNeeded(
-                        subviews: subviews,
-                        baseTransitioningView: transitioningView,
-                        isFromView: isFromView,
-                        direction: direction,
-                        alphaChangeStrategy: alphaChangeStrategy
-                    )
+                
+                let extractedSubViews = extractSubviewsIfNeeded(
+                    subviews: subviews,
+                    baseTransitioningView: transitioningView,
+                    isFromView: isFromView,
+                    direction: direction,
+                    alphaChangeStrategy: alphaChangeStrategy
                 )
+                
+                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
 
+                finalTransitioningViews.append(contentsOf: extractedSubViews)
+                
             } else if case .splitContent(let axis, let centerView, let keepCenterView, let alphaChangeStrategy) = transitioningView.style {
-                finalTransitioningViews.append(contentsOf:
-                    extractSplitContentViews(
-                        axis: axis,
-                        subviews: subviews,
-                        baseTransitioningView: transitioningView,
-                        isFromView: isFromView,
-                        centerView: centerView,
-                        keepCenterView: keepCenterView,
-                        alphaChangeStrategy: alphaChangeStrategy
-                    )
+                let extractedSubViews = extractSplitContentViews(
+                    axis: axis,
+                    subviews: subviews,
+                    baseTransitioningView: transitioningView,
+                    isFromView: isFromView,
+                    centerView: centerView,
+                    keepCenterView: keepCenterView,
+                    alphaChangeStrategy: alphaChangeStrategy
                 )
+
+                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
+                finalTransitioningViews.append(contentsOf: extractedSubViews)
+                
             } else {
                 finalTransitioningViews.append(transitioningView)
             }

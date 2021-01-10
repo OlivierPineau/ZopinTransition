@@ -69,6 +69,16 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
         let fOverlayViews = extractOverlayViews(viewController: fromVc)
         let tOverlayViews = extractOverlayViews(viewController: toVc)
+        
+        var overlaysOriginalAlpha = [CALayer: Float]()
+        var viewsOriginalAlpha = [CALayer: Float]()
+        if isPresenting {
+            fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { overlaysOriginalAlpha[$0] = $0.opacity }
+            fromViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { viewsOriginalAlpha[$0] = $0.opacity }
+        } else {
+            tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { overlaysOriginalAlpha[$0] = $0.opacity }
+            toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { viewsOriginalAlpha[$0] = $0.opacity }
+        }
 
         transitioningSnapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
         
@@ -81,11 +91,11 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         transitioningSnapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
-            fOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
-            fromViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            fOverlayViews.forEach { $0.view.alpha = 0 }
+            fromViews.forEach { $0.view.alpha = 0 }
         } else {
-            tOverlayViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
-            toViews.forEach { $0.view.alpha = 1 - $0.originalAlphaChange }
+            tOverlayViews.forEach { $0.view.alpha = 0 }
+            toViews.forEach { $0.view.alpha = 0 }
         }
         
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
@@ -117,11 +127,11 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             strongSelf.transitioningSnapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
 
             if strongSelf.isPresenting {
-                fOverlayViews.forEach { $0.view.alpha = 1 }
-                fromViews.forEach { $0.view.alpha = 1 }
+                fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
+                fromViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
             } else {
-                tOverlayViews.forEach { $0.view.alpha = 1 }
-                toViews.forEach { $0.view.alpha = 1 }
+                tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
+                toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
             }
 
             toVc.view.alpha = 1
