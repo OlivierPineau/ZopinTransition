@@ -176,9 +176,9 @@ extension ZopinSnapshotter {
             }
         }
 
-        if !isFromView {
-            orderedSubviews.reverse()
-        }
+//        if !isFromView {
+//            orderedSubviews.reverse()
+//        }
 
         var config = baseTransitioningView.config
         var delay = config.relativeDelay
