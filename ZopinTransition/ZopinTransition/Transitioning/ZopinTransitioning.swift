@@ -189,6 +189,7 @@ extension ZopinTransitioning {
         context.containerView.addSubview(toVc.view)
         toVc.view.setNeedsLayout()
         toVc.view.layoutIfNeeded()
+        toVc.view.setNeedsDisplay()
         context.containerView.layoutIfNeeded()
     }
 

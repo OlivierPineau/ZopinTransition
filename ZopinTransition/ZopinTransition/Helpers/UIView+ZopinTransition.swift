@@ -37,7 +37,8 @@ extension UIView {
         var offset: Int = 0
         layers.enumerated().forEach { (index, layer) in
             if subviewsLayers.contains(layer) {
-                let subviewCopy = subviews[index - offset].copyView(hideSubviews: hideSubviews)
+                let subview = subviews[index - offset]
+                let subviewCopy = subview.copyView(hideSubviews: hideSubviews)
                 
                 if let visualEffectView = copy as? UIVisualEffectView {
                     visualEffectView.contentView.addSubview(subviewCopy)
@@ -68,9 +69,24 @@ extension UIView {
             return scrollView.zopinCopy()
         } else if let visualEffectView = self as? UIVisualEffectView {
             return visualEffectView.zopinCopy()
+        } else if let mk = self as? MKMarkerAnnotationView {
+            return mk.zopinCopy()
         }
 
-        return UIView(frame: frame)
+        return UnMappedTransitioningView(frame: frame, classForCoderString: String(describing: self.classForCoder))
+    }
+}
+
+final class UnMappedTransitioningView: UIView {
+    public let classForCodeString: String
+    
+    init(frame: CGRect, classForCoderString: String) {
+        self.classForCodeString = classForCoderString
+        super.init(frame: frame)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 
@@ -110,6 +126,12 @@ extension CALayer {
         copy.magnificationFilter = magnificationFilter
         copy.minificationFilterBias = minificationFilterBias
         
+        guard !hideSubviews else { return copy }
+
+        sublayers?.forEach {
+            copy.addSublayer($0.zopinCopy(hideSubviews: hideSubviews))
+        }
+
         return copy
     }
 
@@ -226,6 +248,36 @@ private extension UIVisualEffectView {
     func zopinCopy() -> UIVisualEffectView {
         let copy = UIVisualEffectView(frame: frame)
         copy.effect = effect
+        return copy
+    }
+}
+
+private extension MKMarkerAnnotationView {
+    func zopinCopy() -> MKMarkerAnnotationView {
+        let copy = MKMarkerAnnotationView(frame: frame)
+        copy.titleVisibility = titleVisibility
+        copy.subtitleVisibility = subtitleVisibility
+        copy.markerTintColor = markerTintColor
+        copy.glyphTintColor = glyphTintColor
+        copy.glyphText = glyphText
+        copy.glyphImage = glyphImage
+        copy.selectedGlyphImage = selectedGlyphImage
+        copy.animatesWhenAdded = animatesWhenAdded
+
+        copy.image = image
+        copy.centerOffset = centerOffset
+        copy.calloutOffset = calloutOffset
+        copy.isEnabled = isEnabled
+        copy.isHighlighted = isHighlighted
+        copy.isSelected = isSelected
+        copy.canShowCallout = canShowCallout
+        copy.leftCalloutAccessoryView = leftCalloutAccessoryView
+        copy.rightCalloutAccessoryView = rightCalloutAccessoryView
+        copy.detailCalloutAccessoryView = detailCalloutAccessoryView
+        copy.isDraggable = isDraggable
+        copy.dragState = dragState
+        copy.collisionMode = collisionMode
+        
         return copy
     }
 }

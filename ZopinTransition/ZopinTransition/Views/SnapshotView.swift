@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import MapKit
 
 @objc
 extension UIView {
@@ -36,6 +37,17 @@ final class SnapshotView: UIView {
             snapshot.frame = bounds
             
             guard oldSize.width != 0, oldSize.height != 0 else { return }
+            
+            if snapshot is MKAnnotationView {
+                // I really don't know why
+                return
+            }
+            
+            if let unMappedView = snapshot as? UnMappedTransitioningView {
+                if unMappedView.classForCodeString == "_MKUserLocationView" {
+                    return
+                }
+            }
 
             for subview in snapshot.subviews {
                 let widthRatio = subview.width / oldSize.width
@@ -73,6 +85,7 @@ final class SnapshotLayerView: UIView {
         self.initialSize = snapshotLayer.frame.size
         self.oldSize = snapshotLayer.frame.size
         super.init(frame: snapshotLayer.frame)
+        frame = snapshotLayer.frame
         
         backgroundColor = .clear
         clipsToBounds = false
@@ -97,12 +110,12 @@ final class SnapshotLayerView: UIView {
                 height: initialSize.height
             )
             snapshotLayer.frame = containerView.bounds
-            
+
             guard initialSize.width != 0, initialSize.height != 0 else { return }
-            
+
             let widthRatio = width / initialSize.width
             let heightRatio = height / initialSize.height
-            
+
             containerView.transform = CGAffineTransform(scaleX: widthRatio, y: heightRatio)
             oldSize = size
         }
