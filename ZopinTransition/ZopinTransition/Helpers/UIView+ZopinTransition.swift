@@ -38,6 +38,7 @@ extension UIView {
         layers.enumerated().forEach { (index, layer) in
             if subviewsLayers.contains(layer) {
                 let subview = subviews[index - offset]
+                
                 let subviewCopy = subview.copyView(hideSubviews: hideSubviews)
                 
                 if let visualEffectView = copy as? UIVisualEffectView {
@@ -67,6 +68,8 @@ extension UIView {
             return imageView.zopinCopy()
         } else if let scrollView = self as? UIScrollView {
             return scrollView.zopinCopy()
+        } else if let activityIndicatorView = self as? UIActivityIndicatorView {
+            return activityIndicatorView.zopinCopy()
         } else if let visualEffectView = self as? UIVisualEffectView {
             return visualEffectView.zopinCopy()
         } else if let mk = self as? MKMarkerAnnotationView {
@@ -240,6 +243,21 @@ private extension UIScrollView {
         copy.showsVerticalScrollIndicator = showsVerticalScrollIndicator
         copy.showsHorizontalScrollIndicator = showsHorizontalScrollIndicator
 
+        return copy
+    }
+}
+
+private extension UIActivityIndicatorView {
+    func zopinCopy() -> UIActivityIndicatorView {
+        let copy = UIActivityIndicatorView(frame: frame)
+        copy.style = style
+        copy.hidesWhenStopped = hidesWhenStopped
+        copy.color = color
+        
+        if isAnimating {
+            copy.startAnimating()
+        }
+        
         return copy
     }
 }

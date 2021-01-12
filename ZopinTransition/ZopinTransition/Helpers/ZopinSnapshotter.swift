@@ -77,7 +77,12 @@ extension ZopinSnapshotter {
                     alphaChangeStrategy: alphaChangeStrategy
                 )
                 
-                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
+                extractedSubViews.forEach {
+                    if transitioningView.view.isHidden {
+                        $0.view.isHidden = true
+                    }
+                    $0.view.alpha = $0.view.alpha * transitioningView.view.alpha
+                }
                 
                 finalTransitioningViews.append(contentsOf: extractedSubViews)
 
@@ -94,7 +99,12 @@ extension ZopinSnapshotter {
                     alphaChangeStrategy: alphaChangeStrategy
                 )
                 
-                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
+                extractedSubViews.forEach {
+                    if transitioningView.view.isHidden {
+                        $0.view.isHidden = true
+                    }
+                    $0.view.alpha = $0.view.alpha * transitioningView.view.alpha
+                }
 
                 finalTransitioningViews.append(contentsOf: extractedSubViews)
                 
@@ -109,7 +119,13 @@ extension ZopinSnapshotter {
                     alphaChangeStrategy: alphaChangeStrategy
                 )
 
-                extractedSubViews.forEach { $0.view.alpha = $0.view.alpha * transitioningView.view.alpha }
+                extractedSubViews.forEach {
+                    if transitioningView.view.isHidden {
+                        $0.view.isHidden = true
+                    }
+                    $0.view.alpha = $0.view.alpha * transitioningView.view.alpha
+                }
+                
                 finalTransitioningViews.append(contentsOf: extractedSubViews)
                 
             } else {

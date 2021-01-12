@@ -138,7 +138,6 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             toVc.view.setNeedsLayout()
             toVc.view.layoutIfNeeded()
             
-            
             fromVc.endAppearanceTransition()
             toVc.endAppearanceTransition()
             
