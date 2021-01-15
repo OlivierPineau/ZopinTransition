@@ -69,10 +69,10 @@ public enum TransitioningStyle {
 }
 
 public class TransitioningView: NSObject {
-    var view: UIView
-    var style: TransitioningStyle
-    var priority: Int // 0 - Int.max
-    var config: TransitioningViewConfig
+    public var view: UIView
+    public var style: TransitioningStyle
+    public var priority: Int // 0 - Int.max
+    public var config: TransitioningViewConfig
 
     public init(view: UIView, style: TransitioningStyle, priority: Int, config: TransitioningViewConfig = TransitioningViewConfig()) {
         self.view = view
@@ -111,10 +111,10 @@ public extension TransitioningView {
 }
 
 public struct TransitioningViewConfig {
-    var relativeDuration: TimeInterval
-    var relativeDelay: TimeInterval
-    var hideSubviews: Bool
-    var mask: TransitioningView?
+    public var relativeDuration: TimeInterval
+    public var relativeDelay: TimeInterval
+    public var hideSubviews: Bool
+    public var mask: TransitioningView?
 
     public init(relativeDuration: TimeInterval = 1, relativeDelay: TimeInterval = 0, hideSubviews: Bool = false, mask: TransitioningView? = nil) {
         self.relativeDuration = relativeDuration
