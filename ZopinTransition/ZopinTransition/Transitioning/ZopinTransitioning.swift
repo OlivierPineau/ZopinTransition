@@ -13,14 +13,16 @@ public protocol Transitionable {
 public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
     private let duration: TimeInterval
     private let isPresenting: Bool
+    private let hasInteractiveStart: Bool
     private let timingParameters: UITimingCurveProvider
     private var transitioningSnapshotter: ZopinSnapshotter!
     private var currentAnimator: UIViewImplicitlyAnimating?
 
-    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut)) {
+    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false) {
         self.isPresenting = isPresenting
         self.duration = duration
         self.timingParameters = timingParameters
+        self.hasInteractiveStart = hasInteractiveStart
         super.init()
     }
 
@@ -29,7 +31,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
     }
 
     public var wantsInteractiveStart: Bool {
-        return false
+        return hasInteractiveStart
     }
 
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {

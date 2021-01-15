@@ -4,18 +4,22 @@ import UIKit
 public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
     private let presentationDuration: TimeInterval
     private let presentationTimingParameters: UITimingCurveProvider
+    private let presentationHasInteractiveStart: Bool
     private let dismissalDuration: TimeInterval
     private let dismissalTimingParameters: UITimingCurveProvider
+    private let dismissalHasInteractiveStart: Bool
     
-    private lazy var presentationAnimationController = ZopinTransitioning(isPresenting: true, duration: presentationDuration, timingParameters: presentationTimingParameters)
+    private lazy var presentationAnimationController = ZopinTransitioning(isPresenting: true, duration: presentationDuration, timingParameters: presentationTimingParameters, hasInteractiveStart: presentationHasInteractiveStart)
     
-    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters)
+    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters, hasInteractiveStart: dismissalHasInteractiveStart)
     
-    public init(transitionableViewController: TransitionableViewController, presentationDuration: TimeInterval = 0.35, presentationTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut),  dismissalDuration: TimeInterval = 0.35, dismissalTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut)) {
+    public init(transitionableViewController: TransitionableViewController, presentationDuration: TimeInterval = 0.35, presentationTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), presentationHasInteractiveStart: Bool = false, dismissalDuration: TimeInterval = 0.35, dismissalTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), dismissalHasInteractiveStart: Bool = false) {
         self.presentationDuration = presentationDuration
         self.presentationTimingParameters = presentationTimingParameters
+        self.presentationHasInteractiveStart = presentationHasInteractiveStart
         self.dismissalDuration = dismissalDuration
         self.dismissalTimingParameters = dismissalTimingParameters
+        self.dismissalHasInteractiveStart = dismissalHasInteractiveStart
         super.init()
         transitionableViewController.navigationController?.modalPresentationStyle = .fullScreen
         transitionableViewController.modalPresentationStyle = .fullScreen
@@ -30,12 +34,12 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
     }
 
     public func interactionControllerForPresentation(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning else { return nil }
+        guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning, interactiveTransitioning.wantsInteractiveStart == true else { return nil }
         return interactiveTransitioning
     }
 
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning else { return nil }
+        guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning, interactiveTransitioning.wantsInteractiveStart == true else { return nil }
         return interactiveTransitioning
     }
 }
