@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 
 public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
+    private let transitionableViewController: TransitionableViewController
     private let presentationDuration: TimeInterval
     private let presentationTimingParameters: UITimingCurveProvider
     private let presentationHasInteractiveStart: Bool
@@ -11,9 +12,10 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
     
     private lazy var presentationAnimationController = ZopinTransitioning(isPresenting: true, duration: presentationDuration, timingParameters: presentationTimingParameters, hasInteractiveStart: presentationHasInteractiveStart)
     
-    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters, hasInteractiveStart: dismissalHasInteractiveStart)
+    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters, hasInteractiveStart: dismissalHasInteractiveStart, viewController: transitionableViewController as? InteractiveTransitionableViewController)
     
     public init(transitionableViewController: TransitionableViewController, presentationDuration: TimeInterval = 0.35, presentationTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), presentationHasInteractiveStart: Bool = false, dismissalDuration: TimeInterval = 0.35, dismissalTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), dismissalHasInteractiveStart: Bool = false) {
+        self.transitionableViewController = transitionableViewController
         self.presentationDuration = presentationDuration
         self.presentationTimingParameters = presentationTimingParameters
         self.presentationHasInteractiveStart = presentationHasInteractiveStart
@@ -39,7 +41,8 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
     }
 
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning, interactiveTransitioning.wantsInteractiveStart == true else { return nil }
-        return interactiveTransitioning
+        guard let interactiveTransitioning = animator as? InteractionControlling else { return nil }
+//              , interactiveTransitioning.wantsInteractiveStart == true else { return nil }
+        return interactiveTransitioning.interactionInProgress ? interactiveTransitioning : nil
     }
 }

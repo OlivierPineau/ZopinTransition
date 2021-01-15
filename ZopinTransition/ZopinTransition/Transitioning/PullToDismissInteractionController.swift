@@ -1,18 +1,8 @@
 import UIKit
 
-public typealias CustomPresentableViewController = UIViewController & CustomPresentable
-
-public protocol CustomPresentable {
-    var initialDismissalScrollView: UIScrollView? { get }
-}
-
-public protocol InteractionControlling {//}: UIViewControllerInteractiveTransitioning {
-    var interactionInProgress: Bool { get }
-}
-
-final class PullToDismissInteractionController: NSObject {
+final class PullToDismissInteractionController: NSObject, InteractiveTransitioningController {
     var interactionInProgress = false
-    private weak var viewController: CustomPresentableViewController?
+    private weak var viewController: InteractiveTransitionableViewController?
     private weak var transitionContext: UIViewControllerContextTransitioning?
 
     private var interactionDistance: CGFloat = 0
@@ -25,7 +15,7 @@ final class PullToDismissInteractionController: NSObject {
     
     private var activeScrollView: UIScrollView?
     
-    init(viewController: CustomPresentableViewController) {
+    init(viewController: InteractiveTransitionableViewController) {
         self.viewController = viewController
         super.init()
         prepareGestureRecognizer(in: viewController.view)
@@ -63,27 +53,29 @@ extension PullToDismissInteractionController {//}: InteractionControlling {
 //    }
 
     func update(progress: CGFloat) {
-        guard let transitionContext = transitionContext,
-            let presentedFrame = presentedFrame,
-            let presentedViewController = transitionContext.viewController(forKey: .from)
-        else { return }
+//        guard let transitionContext = transitionContext,
+//            let presentedFrame = presentedFrame,
+//            let presentedViewController = transitionContext.viewController(forKey: .from)
+//        else { return }
+        guard let transitionContext = transitionContext else { return }
         transitionContext.updateInteractiveTransition(progress)
         
-        presentedViewController.view.frame = CGRect(x: presentedFrame.minX, y: presentedFrame.minY + interactionDistance * progress, width: presentedFrame.width, height: presentedFrame.height)
+//        presentedViewController.view.frame = CGRect(x: presentedFrame.minX, y: presentedFrame.minY + interactionDistance * progress, width: presentedFrame.width, height: presentedFrame.height)
         updateProgressivePresentationController(progress: 1.0 - progress)
     }
 
     func cancel(initialSpringVelocity: CGFloat) {
-        guard let transitionContext = transitionContext,
-            let presentedFrame = presentedFrame,
-            let presentedViewController = transitionContext.viewController(forKey: .from)
-        else { return }
+//        guard let transitionContext = transitionContext,
+//            let presentedFrame = presentedFrame,
+//            let presentedViewController = transitionContext.viewController(forKey: .from)
+//        else { return }
+        guard let transitionContext = transitionContext else { return }
 
         let timingParameters = UISpringTimingParameters(dampingRatio: 0.8, initialVelocity: CGVector(dx: 0, dy: initialSpringVelocity))
         cancellationAnimator = UIViewPropertyAnimator(duration: 0.5, timingParameters: timingParameters)
 
         cancellationAnimator?.addAnimations {
-            presentedViewController.view.frame = presentedFrame
+//            presentedViewController.view.frame = presentedFrame
             self.updateProgressivePresentationController(progress: 1)
         }
 
@@ -98,18 +90,19 @@ extension PullToDismissInteractionController {//}: InteractionControlling {
     }
 
     func finish(initialSpringVelocity: CGFloat) {
-        guard let transitionContext = transitionContext,
-              let presentedFrame = presentedFrame,
-              let presentedViewController = transitionContext.viewController(forKey: .from)
-        else { return }
+//        guard let transitionContext = transitionContext,
+//              let presentedFrame = presentedFrame,
+//              let presentedViewController = transitionContext.viewController(forKey: .from)
+//        else { return }
+        guard let transitionContext = transitionContext else { return }
         
-        let dismissedFrame = CGRect(x: presentedFrame.minX, y: transitionContext.containerView.bounds.height, width: presentedFrame.width, height: presentedFrame.height)
+//        let dismissedFrame = CGRect(x: presentedFrame.minX, y: transitionContext.containerView.bounds.height, width: presentedFrame.width, height: presentedFrame.height)
 
         let timingParameters = UISpringTimingParameters(dampingRatio: 0.8, initialVelocity: CGVector(dx: 0, dy: initialSpringVelocity))
         let finishAnimator = UIViewPropertyAnimator(duration: 0.5, timingParameters: timingParameters)
 
         finishAnimator.addAnimations {
-            presentedViewController.view.frame = dismissedFrame
+//            presentedViewController.view.frame = dismissedFrame
             self.updateProgressivePresentationController(progress: 0)
         }
 

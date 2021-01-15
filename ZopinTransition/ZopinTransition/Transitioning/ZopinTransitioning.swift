@@ -5,24 +5,49 @@ import UIKit
 public typealias TransitionableViewController = UIViewController & Transitionable
 public typealias TransitionableView = UIView & Transitionable
 
+public typealias InteractiveTransitionableViewController = TransitionableViewController & Interactive
+
+public protocol Interactive {
+    var initialDismissalScrollView: UIScrollView? { get }
+}
+
+public typealias InteractionControlling = UIViewControllerInteractiveTransitioning & InteractiveTransitioningController
+
+public protocol InteractiveTransitioningController {
+    var interactionInProgress: Bool { get }
+}
+
 @objc
 public protocol Transitionable {
     func transitioningViews(forTransitionWith viewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
-public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, UIViewControllerInteractiveTransitioning {
+public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, InteractionControlling {
     private let duration: TimeInterval
     private let isPresenting: Bool
     private let hasInteractiveStart: Bool
     private let timingParameters: UITimingCurveProvider
     private var transitioningSnapshotter: ZopinSnapshotter!
     private var currentAnimator: UIViewImplicitlyAnimating?
+    
+    private var viewController: InteractiveTransitionableViewController? {
+        didSet {
+            guard let viewController = viewController else { return }
+            interactionController = PullToDismissInteractionController(viewController: viewController)
+        }
+    }
+    private var interactionController: PullToDismissInteractionController?
+    
+    public var interactionInProgress: Bool {
+        interactionController?.interactionInProgress == true
+    }
 
-    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false) {
+    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false, viewController: InteractiveTransitionableViewController? = nil) {
         self.isPresenting = isPresenting
         self.duration = duration
         self.timingParameters = timingParameters
         self.hasInteractiveStart = hasInteractiveStart
+        self.viewController = viewController
         super.init()
     }
 
