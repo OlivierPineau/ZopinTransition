@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A99837010157A0301F982CA /* Pods_ZopinTransition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D48988108DA620CD723C06 /* Pods_ZopinTransition.framework */; };
+		8973BA8525C251740047488D /* DismissalInteractionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8973BA8425C251740047488D /* DismissalInteractionController.swift */; };
 		89DA93EF25B14767003E83CB /* PullToDismissInteractionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DA93EE25B14767003E83CB /* PullToDismissInteractionController.swift */; };
 		89F81F992544ACCC0035970E /* ZopinTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 89F81F972544ACCC0035970E /* ZopinTransition.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		89F81FA22544AE7F0035970E /* UICollectionView+ZopinTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F81FA02544AE7E0035970E /* UICollectionView+ZopinTransition.swift */; };
@@ -23,6 +24,7 @@
 /* Begin PBXFileReference section */
 		092BB9250332BAC66FD3A261 /* Pods-ZopinTransition.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZopinTransition.release.xcconfig"; path = "Target Support Files/Pods-ZopinTransition/Pods-ZopinTransition.release.xcconfig"; sourceTree = "<group>"; };
 		17D48988108DA620CD723C06 /* Pods_ZopinTransition.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZopinTransition.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8973BA8425C251740047488D /* DismissalInteractionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissalInteractionController.swift; sourceTree = "<group>"; };
 		89DA93EE25B14767003E83CB /* PullToDismissInteractionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullToDismissInteractionController.swift; sourceTree = "<group>"; };
 		89F81F942544ACCC0035970E /* ZopinTransition.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZopinTransition.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89F81F972544ACCC0035970E /* ZopinTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZopinTransition.h; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				89F81FA52544AEB00035970E /* ZopinTransitioning.swift */,
 				89F81FB12544C4810035970E /* ZopinTransitioningDelegate.swift */,
 				89DA93EE25B14767003E83CB /* PullToDismissInteractionController.swift */,
+				8973BA8425C251740047488D /* DismissalInteractionController.swift */,
 			);
 			path = Transitioning;
 			sourceTree = "<group>";
@@ -243,6 +246,7 @@
 			files = (
 				89F81FAF2544AEE80035970E /* SnapshotView.swift in Sources */,
 				89DA93EF25B14767003E83CB /* PullToDismissInteractionController.swift in Sources */,
+				8973BA8525C251740047488D /* DismissalInteractionController.swift in Sources */,
 				89F81FA92544AEC30035970E /* ZopinPresentationController.swift in Sources */,
 				89F81FAB2544AED00035970E /* ZopinSnapshotter.swift in Sources */,
 				89F81FA62544AEB00035970E /* ZopinTransitioning.swift in Sources */,

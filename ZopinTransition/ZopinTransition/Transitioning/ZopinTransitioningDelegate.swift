@@ -10,9 +10,11 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
     private let dismissalTimingParameters: UITimingCurveProvider
     private let dismissalHasInteractiveStart: Bool
     
+    private var interactionController: DismissalInteractionController?
+    
     private lazy var presentationAnimationController = ZopinTransitioning(isPresenting: true, duration: presentationDuration, timingParameters: presentationTimingParameters, hasInteractiveStart: presentationHasInteractiveStart)
     
-    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters, hasInteractiveStart: dismissalHasInteractiveStart, viewController: transitionableViewController as? InteractiveTransitionableViewController)
+    private lazy var dismissalAnimationController = ZopinTransitioning(isPresenting: false, duration: dismissalDuration, timingParameters: dismissalTimingParameters, hasInteractiveStart: dismissalHasInteractiveStart)//, viewController: transitionableViewController as? InteractiveTransitionableViewController)
     
     public init(transitionableViewController: TransitionableViewController, presentationDuration: TimeInterval = 0.35, presentationTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), presentationHasInteractiveStart: Bool = false, dismissalDuration: TimeInterval = 0.35, dismissalTimingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), dismissalHasInteractiveStart: Bool = false) {
         self.transitionableViewController = transitionableViewController
@@ -25,6 +27,10 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
         super.init()
         transitionableViewController.navigationController?.modalPresentationStyle = .fullScreen
         transitionableViewController.modalPresentationStyle = .fullScreen
+        
+        if let interactiveTransitionableViewController = transitionableViewController as? InteractiveTransitionableViewController {
+            interactionController = DismissalInteractionController(viewController: interactiveTransitionableViewController, transitionType: .scaleCenter)
+        }
     }
         
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
@@ -34,15 +40,18 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         dismissalAnimationController
     }
-
+    
     public func interactionControllerForPresentation(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
         guard let interactiveTransitioning = animator as? UIViewControllerInteractiveTransitioning, interactiveTransitioning.wantsInteractiveStart == true else { return nil }
         return interactiveTransitioning
     }
 
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
-        guard let interactiveTransitioning = animator as? InteractionControlling else { return nil }
-//              , interactiveTransitioning.wantsInteractiveStart == true else { return nil }
-        return interactiveTransitioning.interactionInProgress ? interactiveTransitioning : nil
+        guard let interactionController = interactionController,
+              interactionController.interactionInProgress
+        else {
+            return nil
+        }
+        return interactionController
     }
 }
