@@ -164,7 +164,9 @@ class DismissalInteractionController: NSObject {
         let progress = adjustedTranslation / verticalInteractionDistance
         
         transitionContext.updateInteractiveTransition(progress)
-        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
+        
+//        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
+        transitionContext.containerView.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
     }
     
     private func scaleTransform(verticalTranslation: CGFloat, maxVerticalTranslation: CGFloat = 80) -> CGAffineTransform {

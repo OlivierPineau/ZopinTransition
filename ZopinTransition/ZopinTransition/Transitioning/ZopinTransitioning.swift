@@ -22,7 +22,7 @@ public protocol Transitionable {
     func transitioningViews(forTransitionWith viewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
-public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, InteractionControlling {
+public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning {//}, InteractionControlling {
     private let duration: TimeInterval
     private let isPresenting: Bool
     private let hasInteractiveStart: Bool
@@ -38,9 +38,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
     }
     private var interactionController: PullToDismissInteractionController?
     
-    public var interactionInProgress: Bool {
-        interactionController?.interactionInProgress == true
-    }
+//    public var interactionInProgress: Bool {
+//        interactionController?.interactionInProgress == true
+//    }
 
     init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false, viewController: InteractiveTransitionableViewController? = nil) {
         self.isPresenting = isPresenting
@@ -63,9 +63,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         interruptibleAnimator(using: transitionContext).startAnimation()
     }
 
-    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
-        interruptibleAnimator(using: transitionContext).startAnimation()
-    }
+//    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+//        interruptibleAnimator(using: transitionContext).startAnimation()
+//    }
 
     public func interruptibleAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating {
         if let currentAnimator = currentAnimator {
@@ -211,6 +211,7 @@ extension ZopinTransitioning {
 
     private func setupContainer(context: UIViewControllerContextTransitioning) {
         guard let toVc = context.viewController(forKey: .to) else { return }
+        guard isPresenting else { return }
         toVc.view.frame = context.finalFrame(for: toVc)
         context.containerView.addSubview(toVc.view)
         toVc.view.setNeedsLayout()
