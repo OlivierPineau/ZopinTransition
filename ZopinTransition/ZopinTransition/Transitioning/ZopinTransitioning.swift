@@ -22,12 +22,11 @@ public protocol Transitionable {
     func transitioningViews(forTransitionWith viewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
-public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning {//}, InteractionControlling {
+public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, InteractionControlling {
     private let duration: TimeInterval
     private let isPresenting: Bool
     private let hasInteractiveStart: Bool
     private let timingParameters: UITimingCurveProvider
-    private var transitioningSnapshotter: ZopinSnapshotter!
     private var currentAnimator: UIViewImplicitlyAnimating?
     
     private var viewController: InteractiveTransitionableViewController? {
@@ -38,9 +37,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
     }
     private var interactionController: PullToDismissInteractionController?
     
-//    public var interactionInProgress: Bool {
-//        interactionController?.interactionInProgress == true
-//    }
+    public var interactionInProgress: Bool {
+        interactionController?.interactionInProgress == true
+    }
 
     init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false, viewController: InteractiveTransitionableViewController? = nil) {
         self.isPresenting = isPresenting
@@ -63,9 +62,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         interruptibleAnimator(using: transitionContext).startAnimation()
     }
 
-//    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
-//        interruptibleAnimator(using: transitionContext).startAnimation()
-//    }
+    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+        interruptibleAnimator(using: transitionContext).startAnimation()
+    }
 
     public func interruptibleAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating {
         if let currentAnimator = currentAnimator {
@@ -73,11 +72,8 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         }
 
         guard let fromVc = transitionContext.viewController(forKey: .from),
-            let fromViewController = findTransitionableViewController(from: fromVc),
-            let toVc = transitionContext.viewController(forKey: .to),
-            let toViewController = findTransitionableViewController(from: toVc)
+              let toVc = transitionContext.viewController(forKey: .to)
         else {
-            print("Failed to complete transition: \(self)")
             transitionContext.completeTransition(false)
             return UIViewPropertyAnimator(duration: 0, curve: .linear, animations: nil)
         }
@@ -85,12 +81,31 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         fromVc.beginAppearanceTransition(false, animated: true)
         toVc.beginAppearanceTransition(true, animated: true)
 
-        let container = transitionContext.containerView
-        container.backgroundColor = .clear
-        let duration = transitionDuration(using: transitionContext)
-
         setupContainer(context: transitionContext)
-
+        
+        guard let animator = buildAnimator(using: transitionContext) else {
+            return UIViewPropertyAnimator(duration: 0, curve: .linear, animations: nil)
+        }
+        self.currentAnimator = animator
+        
+        return animator
+    }
+    
+    func updateAnimator(using transitionContext: UIViewControllerContextTransitioning) {
+        guard let animator = buildAnimator(using: transitionContext) else { return }
+        self.currentAnimator = animator
+        currentAnimator?.startAnimation()
+    }
+        
+    private func buildAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating? {
+        guard let fromVc = transitionContext.viewController(forKey: .from),
+            let fromViewController = findTransitionableViewController(from: fromVc),
+            let toVc = transitionContext.viewController(forKey: .to),
+            let toViewController = findTransitionableViewController(from: toVc)
+        else {
+            return nil
+        }
+        
         let fromViews = fromViewController.transitioningViews(forTransitionWith: toViewController, isDestination: false)
         let toViews = toViewController.transitioningViews(forTransitionWith: fromViewController, isDestination: true)
 
@@ -106,13 +121,14 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { overlaysOriginalAlpha[$0] = $0.opacity }
             toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { viewsOriginalAlpha[$0] = $0.opacity }
         }
-
-        transitioningSnapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
+        
+        let container = transitionContext.containerView
+        let transitioningSnapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
         
         if isPresenting {
             setupPresentationContainerAlpha(context: transitionContext)
         } else {
-            setupDismissalContainerAlpha(context: transitionContext)
+//            setupDismissalContainerAlpha(context: transitionContext)
         }
         
         transitioningSnapshotter.setupViewsBeforeTransition()
@@ -125,6 +141,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             toViews.forEach { $0.view.alpha = 0 }
         }
         
+        let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
 
         let groupedByRelativeDelays = transitioningSnapshotter.groupedByDelays
@@ -138,9 +155,9 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
             for relativeDuration in durations {
                 guard let views = groupedByRelativeDuration[relativeDuration] else { continue }
-                animator.addAnimations({ [unowned self] in
-                    self.transitioningSnapshotter.setupToFinalAppearances(transitioningViews: views)
-                    self.transitioningSnapshotter.setupFromFinalAppearances(views: views)
+                animator.addAnimations({
+                    transitioningSnapshotter.setupToFinalAppearances(transitioningViews: views)
+                    transitioningSnapshotter.setupFromFinalAppearances(views: views)
                 }, delayFactor: relativeDelay.f)
             }
         }
@@ -151,7 +168,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
                 return
             }
             
-            strongSelf.transitioningSnapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
+            transitioningSnapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
 
             if strongSelf.isPresenting {
                 fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
@@ -172,7 +189,6 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         }
 
-        self.currentAnimator = animator
         return animator
     }
 }
@@ -211,9 +227,9 @@ extension ZopinTransitioning {
 
     private func setupContainer(context: UIViewControllerContextTransitioning) {
         guard let toVc = context.viewController(forKey: .to) else { return }
-        guard isPresenting else { return }
         toVc.view.frame = context.finalFrame(for: toVc)
-        context.containerView.addSubview(toVc.view)
+        context.containerView.insertSubview(toVc.view, at: 0)
+        context.containerView.backgroundColor = .clear
         toVc.view.setNeedsLayout()
         toVc.view.layoutIfNeeded()
         toVc.view.setNeedsDisplay()

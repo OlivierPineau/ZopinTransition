@@ -27,9 +27,10 @@ final class ZopinSnapshotter {
         let sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
         
         let snapshots = createSnapshots(transitioningViews: sortedTransitioningViews)
-
-        snapshots.forEach {
-            container.addSubview($0)
+        if isPresenting {
+            snapshots.forEach {
+                container.addSubview($0)
+            }
         }
 
         sortedTransitioningViews.enumerated().forEach {

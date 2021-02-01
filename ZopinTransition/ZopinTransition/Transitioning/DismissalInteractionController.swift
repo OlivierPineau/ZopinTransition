@@ -1,6 +1,7 @@
 import UIKit
 
 protocol DismissalInteractionControllerDelegate: AnyObject {
+    func willStartInteractiveTransition(with transitionContext: UIViewControllerContextTransitioning)
     func cancelInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning)
     func finishInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning)
 }
@@ -11,10 +12,11 @@ extension DismissalInteractionController: InteractionControlling {
             transitionContext.completeTransition(false)
             return
         }
-        
+    
         self.transitionContext = transitionContext
-        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
+        delegate?.willStartInteractiveTransition(with: transitionContext)
         
+        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
         verticalInteractionDistance = transitionContext.containerView.bounds.height - finalFrame.minY
         horizontalInteractionDistance = transitionContext.containerView.bounds.width - finalFrame.minX
         
@@ -113,7 +115,8 @@ class DismissalInteractionController: NSObject {
         if velocity.y > 300 || (translation.y > verticalInteractionDistance / 2.0 && velocity.y > -300) {
             finish(initialSpringVelocity: springVelocity(distanceToTravel: verticalInteractionDistance - translation.y, gestureVelocity: velocity.y))
         } else {
-            cancel(initialSpringVelocity: springVelocity(distanceToTravel: -translation.y, gestureVelocity: velocity.y))
+            delegate?.finishInteractiveTransition(with: 0, transitionContext!)
+//            cancel(initialSpringVelocity: springVelocity(distanceToTravel: -translation.y, gestureVelocity: velocity.y))
         }
     }
         
@@ -164,9 +167,7 @@ class DismissalInteractionController: NSObject {
         let progress = adjustedTranslation / verticalInteractionDistance
         
         transitionContext.updateInteractiveTransition(progress)
-        
-//        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
-        transitionContext.containerView.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
+        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
     }
     
     private func scaleTransform(verticalTranslation: CGFloat, maxVerticalTranslation: CGFloat = 80) -> CGAffineTransform {
