@@ -1,27 +1,21 @@
 import UIKit
 
+public typealias InteractiveTransitionableViewController = TransitionableViewController & Interactive
+
+public protocol Interactive {
+    var initialDismissalScrollView: UIScrollView? { get }
+}
+
+public typealias InteractionControlling = UIViewControllerInteractiveTransitioning & InteractiveTransitioningController
+
+public protocol InteractiveTransitioningController {
+    var interactionInProgress: Bool { get }
+}
+
 protocol DismissalInteractionControllerDelegate: AnyObject {
     func willStartInteractiveTransition(with transitionContext: UIViewControllerContextTransitioning)
     func cancelInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning)
     func finishInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning)
-}
-
-extension DismissalInteractionController: InteractionControlling {
-    func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
-        guard let presentedViewController = transitionContext.viewController(forKey: .from) else {
-            transitionContext.completeTransition(false)
-            return
-        }
-    
-        self.transitionContext = transitionContext
-        delegate?.willStartInteractiveTransition(with: transitionContext)
-        
-        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
-        verticalInteractionDistance = transitionContext.containerView.bounds.height - finalFrame.minY
-        horizontalInteractionDistance = transitionContext.containerView.bounds.width - finalFrame.minX
-        
-        presentedFrame = finalFrame
-    }
 }
 
 class DismissalInteractionController: NSObject {
@@ -262,6 +256,28 @@ extension DismissalInteractionController: UIGestureRecognizerDelegate {
         if let scrollView = viewController.initialDismissalScrollView {
             return scrollView.contentOffset.y <= 0
         }
+        return true
+    }
+}
+
+extension DismissalInteractionController: InteractionControlling {
+    func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+        guard let presentedViewController = transitionContext.viewController(forKey: .from) else {
+            transitionContext.completeTransition(false)
+            return
+        }
+    
+        self.transitionContext = transitionContext
+        delegate?.willStartInteractiveTransition(with: transitionContext)
+        
+        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
+        verticalInteractionDistance = transitionContext.containerView.bounds.height - finalFrame.minY
+        horizontalInteractionDistance = transitionContext.containerView.bounds.width - finalFrame.minX
+        
+        presentedFrame = finalFrame
+    }
+    
+    var wantsInteractiveStart: Bool {
         return true
     }
 }

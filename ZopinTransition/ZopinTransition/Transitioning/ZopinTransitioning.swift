@@ -5,48 +5,24 @@ import UIKit
 public typealias TransitionableViewController = UIViewController & Transitionable
 public typealias TransitionableView = UIView & Transitionable
 
-public typealias InteractiveTransitionableViewController = TransitionableViewController & Interactive
-
-public protocol Interactive {
-    var initialDismissalScrollView: UIScrollView? { get }
-}
-
-public typealias InteractionControlling = UIViewControllerInteractiveTransitioning & InteractiveTransitioningController
-
-public protocol InteractiveTransitioningController {
-    var interactionInProgress: Bool { get }
-}
-
 @objc
 public protocol Transitionable {
     func transitioningViews(forTransitionWith viewController: TransitionableViewController, isDestination: Bool) -> [TransitioningView]
 }
 
-public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning, InteractionControlling {
+public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransitioning {
     private let duration: TimeInterval
     private let isPresenting: Bool
     private let hasInteractiveStart: Bool
     private let timingParameters: UITimingCurveProvider
+    private var transitioningSnapshotter: ZopinSnapshotter?
     private var currentAnimator: UIViewImplicitlyAnimating?
-    
-    private var viewController: InteractiveTransitionableViewController? {
-        didSet {
-            guard let viewController = viewController else { return }
-            interactionController = PullToDismissInteractionController(viewController: viewController)
-        }
-    }
-    private var interactionController: PullToDismissInteractionController?
-    
-    public var interactionInProgress: Bool {
-        interactionController?.interactionInProgress == true
-    }
 
-    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false, viewController: InteractiveTransitionableViewController? = nil) {
+    init(isPresenting: Bool, duration: TimeInterval = 0.35, timingParameters: UITimingCurveProvider = UICubicTimingParameters(animationCurve: .easeInOut), hasInteractiveStart: Bool = false) {
         self.isPresenting = isPresenting
         self.duration = duration
         self.timingParameters = timingParameters
         self.hasInteractiveStart = hasInteractiveStart
-        self.viewController = viewController
         super.init()
     }
 
@@ -54,15 +30,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         return duration
     }
 
-    public var wantsInteractiveStart: Bool {
-        return hasInteractiveStart
-    }
-
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        interruptibleAnimator(using: transitionContext).startAnimation()
-    }
-
-    public func startInteractiveTransition(_ transitionContext: UIViewControllerContextTransitioning) {
         interruptibleAnimator(using: transitionContext).startAnimation()
     }
 
@@ -83,7 +51,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
 
         setupContainer(context: transitionContext)
         
-        guard let animator = buildAnimator(using: transitionContext) else {
+        guard !hasInteractiveStart, let animator = buildAnimator(using: transitionContext) else {
             return UIViewPropertyAnimator(duration: 0, curve: .linear, animations: nil)
         }
         self.currentAnimator = animator
@@ -123,15 +91,17 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         }
         
         let container = transitionContext.containerView
-        let transitioningSnapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
+        let snapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
+        snapshotter.addSnapshotToContainer()
+        self.transitioningSnapshotter = snapshotter
         
         if isPresenting {
             setupPresentationContainerAlpha(context: transitionContext)
         } else {
-//            setupDismissalContainerAlpha(context: transitionContext)
+            setupDismissalContainerAlpha(context: transitionContext)
         }
         
-        transitioningSnapshotter.setupViewsBeforeTransition()
+        snapshotter.setupViewsBeforeTransition()
 
         if isPresenting {
             fOverlayViews.forEach { $0.view.alpha = 0 }
@@ -144,7 +114,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
 
-        let groupedByRelativeDelays = transitioningSnapshotter.groupedByDelays
+        let groupedByRelativeDelays = snapshotter.groupedByDelays
         let relativeDelays = groupedByRelativeDelays.keys.sorted { $0 < $1 }
 
         for relativeDelay in relativeDelays {
@@ -156,8 +126,8 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             for relativeDuration in durations {
                 guard let views = groupedByRelativeDuration[relativeDuration] else { continue }
                 animator.addAnimations({
-                    transitioningSnapshotter.setupToFinalAppearances(transitioningViews: views)
-                    transitioningSnapshotter.setupFromFinalAppearances(views: views)
+                    snapshotter.setupToFinalAppearances(transitioningViews: views)
+                    snapshotter.setupFromFinalAppearances(views: views)
                 }, delayFactor: relativeDelay.f)
             }
         }
@@ -168,7 +138,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
                 return
             }
             
-            transitioningSnapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
+            snapshotter.setupViewsAfterTransition(isPresenting: strongSelf.isPresenting)
 
             if strongSelf.isPresenting {
                 fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }

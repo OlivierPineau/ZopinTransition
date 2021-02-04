@@ -27,11 +27,6 @@ final class ZopinSnapshotter {
         let sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
         
         let snapshots = createSnapshots(transitioningViews: sortedTransitioningViews)
-        if isPresenting {
-            snapshots.forEach {
-                container.addSubview($0)
-            }
-        }
 
         sortedTransitioningViews.enumerated().forEach {
             guard let mask = $0.element.config.mask, let maskSnapshot = createSnapshot(transitioningView: mask) else { return }
@@ -52,6 +47,18 @@ final class ZopinSnapshotter {
             return toViews.contains(sortedTransitioningViews[index])
         }).map { $0.element }
         positionToSnapshots()
+    }
+    
+    func addSnapshotToContainer() {
+        (fromSnapshots + toSnapshots).forEach {
+            container.addSubview($0)
+        }
+    }
+    
+    func removeSnapshotFromContainer() {
+        (fromSnapshots + toSnapshots).forEach {
+            $0.removeFromSuperview()
+        }
     }
 }
 

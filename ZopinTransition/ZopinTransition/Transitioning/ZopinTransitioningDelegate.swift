@@ -63,11 +63,7 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
 
 extension ZopinTransitioningDelegate: DismissalInteractionControllerDelegate {
     func willStartInteractiveTransition(with transitionContext: UIViewControllerContextTransitioning) {
-        transitionContext.containerView.subviews.forEach {
-            if($0 is SnapshotView) {
-                $0.removeFromSuperview()
-            }
-        }
+
     }
     
     func cancelInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning) {
