@@ -166,7 +166,6 @@ class DismissalInteractionController: NSObject {
         
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
-        presentedViewController.view.clipsToBounds = true
         
         let scale = 1 - (maxVerticalTranslation / presentedViewController.view.height) * progress
         transitionContext.updateInteractiveTransition(scale)
@@ -196,7 +195,6 @@ class DismissalInteractionController: NSObject {
         
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
-        presentedViewController.view.clipsToBounds = true
         
         presentedViewController.view.transform = CGAffineTransform(
             scaleX: scale,
@@ -294,15 +292,15 @@ extension DismissalInteractionController: InteractionControlling {
             transitionContext.completeTransition(false)
             return
         }
-    
-        self.transitionContext = transitionContext
+        presentedViewController.view.clipsToBounds = true
         delegate?.willStartInteractiveTransition(with: transitionContext)
         
         let finalFrame = transitionContext.finalFrame(for: presentedViewController)
         verticalInteractionDistance = transitionContext.containerView.bounds.height - finalFrame.minY
         horizontalInteractionDistance = transitionContext.containerView.bounds.width - finalFrame.minX
         
-        presentedFrame = finalFrame
+        self.transitionContext = transitionContext
+        self.presentedFrame = finalFrame
     }
     
     var wantsInteractiveStart: Bool {
