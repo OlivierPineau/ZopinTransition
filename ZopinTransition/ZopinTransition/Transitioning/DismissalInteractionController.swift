@@ -82,7 +82,8 @@ class DismissalInteractionController: NSObject {
             gestureCancelled(translation: adjustedTranslation, velocity: velocity)
         case .ended:
             gestureEnded(translation: adjustedTranslation, velocity: velocity)
-        default: break
+        default:
+            break
         }
     }
 
@@ -156,24 +157,51 @@ class DismissalInteractionController: NSObject {
     
     private func updateScaleCenter(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) {
         guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return }
-        let maxVerticalTranslation: CGFloat = 80
-        let adjustedTranslation = verticalInteractionDistance == 0 ? 0 : min(translation.y, maxVerticalTranslation)
-        let progress = adjustedTranslation / verticalInteractionDistance
+        let scaleTopMargin: CGFloat = 80
+        let maxVerticalTranslation: CGFloat = presentedViewController.view.safeAreaInsets.top + scaleTopMargin
         
-        transitionContext.updateInteractiveTransition(progress)
-        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y, maxVerticalTranslation: maxVerticalTranslation)
+        let verticalTranslation = max(0, translation.y / 2)
+        let adjustedTranslation = verticalInteractionDistance == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
+        let progress = adjustedTranslation / maxVerticalTranslation
+        
+        let viewCornerRadius: CGFloat = 20
+        presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
+        presentedViewController.view.clipsToBounds = true
+        
+        let scale = 1 - (maxVerticalTranslation / presentedViewController.view.height) * progress
+        transitionContext.updateInteractiveTransition(scale)
+        presentedViewController.view.transform = CGAffineTransform(scaleX: scale, y: scale)
     }
     
-    private func scaleTransform(verticalTranslation: CGFloat, maxVerticalTranslation: CGFloat = 80) -> CGAffineTransform {
-        let adjustedTranslation = verticalInteractionDistance == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
-        let progress = adjustedTranslation / verticalInteractionDistance
-        let scale = 1 - progress
-        return CGAffineTransform(scaleX: scale, y: scale)
-    }
-
     private func updateDragAndScale(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) {
         guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return }
-        presentedViewController.view.transform = scaleTransform(verticalTranslation: translation.y).concatenating(
+        
+        let maxHorizontalTranslation: CGFloat = 80
+        let horizontalTranslation = max(0, translation.x)
+        let adjustedHorizontalTranslation = horizontalInteractionDistance == 0 ? 0 : min(horizontalTranslation, maxHorizontalTranslation)
+        let horizonalProgress = adjustedHorizontalTranslation / maxHorizontalTranslation
+        
+        let scaleTopMargin: CGFloat = 80
+        let maxVerticalTranslation: CGFloat = presentedViewController.view.safeAreaInsets.top + scaleTopMargin
+        let verticalTranslation = max(0, translation.y)
+        let adjustedVerticalTranslation = verticalInteractionDistance == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
+        let verticalProgress = adjustedVerticalTranslation / maxVerticalTranslation
+        
+        let horizontalScale = 1 - (maxHorizontalTranslation / presentedViewController.view.width) * horizonalProgress
+        let verticalScale = 1 - (maxVerticalTranslation / presentedViewController.view.height) * verticalProgress
+        let scale = min(horizontalScale, verticalScale)
+        transitionContext.updateInteractiveTransition(scale)
+        
+        let progress = scale == horizontalScale ? horizonalProgress : verticalProgress
+        
+        let viewCornerRadius: CGFloat = 20
+        presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
+        presentedViewController.view.clipsToBounds = true
+        
+        presentedViewController.view.transform = CGAffineTransform(
+            scaleX: scale,
+            y: scale
+        ).concatenating(
             CGAffineTransform(
                 translationX: translation.x,
                 y: translation.y

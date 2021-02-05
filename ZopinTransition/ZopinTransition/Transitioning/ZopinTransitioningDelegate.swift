@@ -29,7 +29,7 @@ public final class ZopinTransitioningDelegate: NSObject, UIViewControllerTransit
         transitionableViewController.modalPresentationStyle = .fullScreen
         
         if let interactiveTransitionableViewController = transitionableViewController as? InteractiveTransitionableViewController {
-            interactionController = DismissalInteractionController(viewController: interactiveTransitionableViewController, transitionType: .scaleCenter)
+            interactionController = DismissalInteractionController(viewController: interactiveTransitionableViewController, transitionType: .dragAndScale)//scaleCenter)
             interactionController?.delegate = self
         }
     }
