@@ -25,9 +25,9 @@ class DismissalInteractionController: NSObject {
     private weak var viewController: InteractiveTransitionableViewController!
     private weak var transitionContext: UIViewControllerContextTransitioning?
 
-    private var verticalInteractionDistance: CGFloat = 0
+    private var containerMaxY: CGFloat = 0
     private var verticalInterruptedTranslation: CGFloat = 0
-    private var horizontalInteractionDistance: CGFloat = 0
+    private var containerMaxX: CGFloat = 0
     private var horizontalInterruptedTranslation: CGFloat = 0
     
     private var presentedFrame: CGRect?
@@ -107,8 +107,8 @@ class DismissalInteractionController: NSObject {
     }
 
     private func gestureEnded(translation: CGPoint, velocity: CGPoint) {
-        if velocity.y > 300 || (translation.y > verticalInteractionDistance / 2.0 && velocity.y > -300) {
-            finish(initialSpringVelocity: springVelocity(distanceToTravel: verticalInteractionDistance - translation.y, gestureVelocity: velocity.y))
+        if velocity.y > 300 || (translation.y > containerMaxY / 2.0 && velocity.y > -300) {
+            finish(initialSpringVelocity: springVelocity(distanceToTravel: containerMaxY - translation.y, gestureVelocity: velocity.y))
         } else {
             delegate?.finishInteractiveTransition(with: 0, transitionContext!)
 //            cancel(initialSpringVelocity: springVelocity(distanceToTravel: -translation.y, gestureVelocity: velocity.y))
@@ -161,8 +161,10 @@ class DismissalInteractionController: NSObject {
         let maxVerticalTranslation: CGFloat = presentedViewController.view.safeAreaInsets.top + scaleTopMargin
         
         let verticalTranslation = max(0, translation.y / 2)
-        let adjustedTranslation = verticalInteractionDistance == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
+        let adjustedTranslation = containerMaxY == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
         let progress = adjustedTranslation / maxVerticalTranslation
+        
+        
         
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
@@ -175,34 +177,32 @@ class DismissalInteractionController: NSObject {
     private func updateDragAndScale(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) {
         guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return }
         
-        let maxHorizontalTranslation: CGFloat = 80
-        let horizontalTranslation = max(0, translation.x)
-        let adjustedHorizontalTranslation = horizontalInteractionDistance == 0 ? 0 : min(horizontalTranslation, maxHorizontalTranslation)
-        let horizonalProgress = adjustedHorizontalTranslation / maxHorizontalTranslation
+        let horizontalTrackingProgress = translation.x / containerMaxX
+        let adjustedHorizontalProgress = 1 - pow(1 - horizontalTrackingProgress, 2)
+        let maxFinalHorizontalTranslation = containerMaxX / 3
+        let horizontalTranslation = max(0, maxFinalHorizontalTranslation * adjustedHorizontalProgress)
         
-        let scaleTopMargin: CGFloat = 80
-        let maxVerticalTranslation: CGFloat = presentedViewController.view.safeAreaInsets.top + scaleTopMargin
-        let verticalTranslation = max(0, translation.y)
-        let adjustedVerticalTranslation = verticalInteractionDistance == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
-        let verticalProgress = adjustedVerticalTranslation / maxVerticalTranslation
+        let verticalTrackingProgress = translation.y / containerMaxY
+        let adjustedVerticalProgress = 1 - pow(1 - verticalTrackingProgress, 2)
+        let maxFinalVerticalTranslation = containerMaxY / 3
+        let verticalTranslation = max(0, maxFinalVerticalTranslation * adjustedVerticalProgress)
         
-        let horizontalScale = 1 - (maxHorizontalTranslation / presentedViewController.view.width) * horizonalProgress
-        let verticalScale = 1 - (maxVerticalTranslation / presentedViewController.view.height) * verticalProgress
-        let scale = min(horizontalScale, verticalScale)
-        transitionContext.updateInteractiveTransition(scale)
-        
-        let progress = scale == horizontalScale ? horizonalProgress : verticalProgress
+        let minScale = (containerMaxX - 60) / containerMaxX
+        let scale: CGFloat = 1 - (1 - minScale) * adjustedVerticalProgress
+        let progress = adjustedVerticalProgress
         
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
+        
+        transitionContext.updateInteractiveTransition(scale)
         
         presentedViewController.view.transform = CGAffineTransform(
             scaleX: scale,
             y: scale
         ).concatenating(
             CGAffineTransform(
-                translationX: translation.x,
-                y: translation.y
+                translationX: horizontalTranslation,
+                y: verticalTranslation
             )
         )
     }
@@ -296,8 +296,8 @@ extension DismissalInteractionController: InteractionControlling {
         delegate?.willStartInteractiveTransition(with: transitionContext)
         
         let finalFrame = transitionContext.finalFrame(for: presentedViewController)
-        verticalInteractionDistance = transitionContext.containerView.bounds.height - finalFrame.minY
-        horizontalInteractionDistance = transitionContext.containerView.bounds.width - finalFrame.minX
+        containerMaxY = transitionContext.containerView.bounds.height - finalFrame.minY
+        containerMaxX = transitionContext.containerView.bounds.width - finalFrame.minX
         
         self.transitionContext = transitionContext
         self.presentedFrame = finalFrame

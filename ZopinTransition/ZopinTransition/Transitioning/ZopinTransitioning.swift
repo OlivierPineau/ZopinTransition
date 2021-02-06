@@ -92,7 +92,6 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         
         let container = transitionContext.containerView
         let snapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
-        snapshotter.addSnapshotToContainer()
         self.transitioningSnapshotter = snapshotter
         
         if isPresenting {

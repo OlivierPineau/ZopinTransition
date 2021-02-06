@@ -47,17 +47,9 @@ final class ZopinSnapshotter {
             return toViews.contains(sortedTransitioningViews[index])
         }).map { $0.element }
         positionToSnapshots()
-    }
-    
-    func addSnapshotToContainer() {
+        
         (fromSnapshots + toSnapshots).forEach {
             container.addSubview($0)
-        }
-    }
-    
-    func removeSnapshotFromContainer() {
-        (fromSnapshots + toSnapshots).forEach {
-            $0.removeFromSuperview()
         }
     }
 }
