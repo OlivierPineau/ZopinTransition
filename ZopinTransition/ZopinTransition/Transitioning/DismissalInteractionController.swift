@@ -117,46 +117,23 @@ class DismissalInteractionController: NSObject {
         
     private func gestureChanged(translation: CGPoint, velocity: CGPoint) {
         guard let transitionContext = transitionContext else { return }
-        
-//        var verticalProgress = verticalInteractionDistance == 0 ? 0 : (translation.y / verticalInteractionDistance)
-//        if verticalProgress < 0 { verticalProgress /= (1.0 + abs(verticalProgress * 20)) }
-        
-//        transitionContext.updateInteractiveTransition(progress)
-        
+
+        let progress: CGFloat
         switch transitionType {
         case .scaleCenter:
-            updateScaleCenter(translation: translation, transitionContext: transitionContext)
+            progress = updateScaleCenter(translation: translation, transitionContext: transitionContext)
         case .dragAndScale:
-            updateDragAndScale(translation: translation, transitionContext: transitionContext)
-//            let minScaleFactor: CGFloat = 0.85
-//            let adjustedProgress = max(1 - progress, minScaleFactor)
-//            let width = presentedFrame.width * adjustedProgress
-//            let height = presentedFrame.height * adjustedProgress
-            
-//            presentedViewController.view.transform = .init(scaleX: adjustedProgress, y: adjustedProgress)
-            
-//            presentedViewController.view.frame = CGRect(
-//                x: presentedFrame.midX - width / 2,
-//                y: presentedFrame.midY - height / 2,
-//                width: width,
-//                height: height
-//            )
-//
-//            presentedViewController.view.frame = CGRect(
-//                x: presentedFrame.minX,
-//                y: presentedFrame.minY + verticalInteractionDistance * progress,
-//                width: presentedFrame.width,
-//                height: presentedFrame.height
-//            )
+            progress = updateDragAndScale(translation: translation, transitionContext: transitionContext)
         }
 
+        transitionContext.updateInteractiveTransition(progress)
 //        if let modalPresentationController = presentedViewController.presentationController as? ModalPresentationController {
 //            modalPresentationController.fadeView.alpha = 1.0 - progress
 //        }
     }
     
-    private func updateScaleCenter(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) {
-        guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return }
+    private func updateScaleCenter(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) -> CGFloat {
+        guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return 0 }
         let scaleTopMargin: CGFloat = 80
         let maxVerticalTranslation: CGFloat = presentedViewController.view.safeAreaInsets.top + scaleTopMargin
         
@@ -164,18 +141,17 @@ class DismissalInteractionController: NSObject {
         let adjustedTranslation = containerMaxY == 0 ? 0 : min(verticalTranslation, maxVerticalTranslation)
         let progress = adjustedTranslation / maxVerticalTranslation
         
-        
-        
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
         
         let scale = 1 - (maxVerticalTranslation / presentedViewController.view.height) * progress
-        transitionContext.updateInteractiveTransition(scale)
         presentedViewController.view.transform = CGAffineTransform(scaleX: scale, y: scale)
+        
+        return scale
     }
     
-    private func updateDragAndScale(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) {
-        guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return }
+    private func updateDragAndScale(translation: CGPoint, transitionContext: UIViewControllerContextTransitioning) -> CGFloat {
+        guard let presentedViewController = transitionContext.viewController(forKey: .from) else { return 0 }
         
         let horizontalTrackingProgress = translation.x / containerMaxX
         let adjustedHorizontalProgress = 1 - pow(1 - horizontalTrackingProgress, 2)
@@ -194,17 +170,17 @@ class DismissalInteractionController: NSObject {
         let viewCornerRadius: CGFloat = 20
         presentedViewController.view.layer.cornerRadius = viewCornerRadius * progress
         
-        transitionContext.updateInteractiveTransition(scale)
-        
         presentedViewController.view.transform = CGAffineTransform(
             scaleX: scale,
             y: scale
         ).concatenating(
             CGAffineTransform(
-                translationX: horizontalTranslation,
+                translationX: translation.x / 2,
                 y: verticalTranslation
             )
         )
+        
+        return scale
     }
     
     func cancel(initialSpringVelocity: CGFloat) {
@@ -292,15 +268,16 @@ extension DismissalInteractionController: InteractionControlling {
             transitionContext.completeTransition(false)
             return
         }
-        presentedViewController.view.clipsToBounds = true
         delegate?.willStartInteractiveTransition(with: transitionContext)
         
-        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
-        containerMaxY = transitionContext.containerView.bounds.height - finalFrame.minY
-        containerMaxX = transitionContext.containerView.bounds.width - finalFrame.minX
+        presentedViewController.view.clipsToBounds = true
         
-        self.transitionContext = transitionContext
+        let finalFrame = transitionContext.finalFrame(for: presentedViewController)
+        self.containerMaxY = transitionContext.containerView.bounds.height - finalFrame.minY
+        self.containerMaxX = transitionContext.containerView.bounds.width - finalFrame.minX
+        
         self.presentedFrame = finalFrame
+        self.transitionContext = transitionContext
     }
     
     var wantsInteractiveStart: Bool {
