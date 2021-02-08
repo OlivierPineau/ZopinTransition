@@ -108,13 +108,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         
         snapshotter.setupViewsBeforeTransition()
 
-        if isPresenting {
-            fOverlayViews.forEach { $0.view.alpha = 0 }
-            fromViews.forEach { $0.view.alpha = 0 }
-        } else {
-            tOverlayViews.forEach { $0.view.alpha = 0 }
-            toViews.forEach { $0.view.alpha = 0 }
-        }
+        hideViews()
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, timingParameters: timingParameters)
@@ -144,6 +138,16 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         return animator
     }
     
+    private func hideViews() {
+        if isPresenting {
+            fOverlayViews.forEach { $0.view.alpha = 0 }
+            fromViews.forEach { $0.view.alpha = 0 }
+        } else {
+            tOverlayViews.forEach { $0.view.alpha = 0 }
+            toViews.forEach { $0.view.alpha = 0 }
+        }
+    }
+    
     private func onTransitionEnded(using transitionContext: UIViewControllerContextTransitioning) {
         guard let snapshotter = transitioningSnapshotter,
               let fromVc = transitionContext.viewController(forKey: .from),
@@ -152,13 +156,7 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         
         snapshotter.setupViewsAfterTransition(isPresenting: isPresenting)
 
-        if isPresenting {
-            fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
-            fromViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
-        } else {
-            tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
-            toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
-        }
+        applyViewsOriginalAlpha()
 
         toVc.view.alpha = 1
         toVc.view.setNeedsLayout()
@@ -169,6 +167,16 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         
         currentAnimator = nil
         transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+    }
+    
+    private func applyViewsOriginalAlpha() {
+        if isPresenting {
+            fOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
+            fromViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
+        } else {
+            tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = overlaysOriginalAlpha[$0] ?? 1 }
+            toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { $0.opacity = viewsOriginalAlpha[$0] ?? 1 }
+        }
     }
 }
 
