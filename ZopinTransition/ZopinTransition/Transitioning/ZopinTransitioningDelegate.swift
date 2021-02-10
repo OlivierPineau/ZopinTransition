@@ -67,7 +67,7 @@ extension ZopinTransitioningDelegate: DismissalInteractionControllerDelegate {
     }
     
     func cancelInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning) {
-        
+        dismissalAnimationController.cancelAnimator(using: transitionContext)
     }
     
     func finishInteractiveTransition(with initialSpringVelocity: CGFloat, _ transitionContext: UIViewControllerContextTransitioning) {

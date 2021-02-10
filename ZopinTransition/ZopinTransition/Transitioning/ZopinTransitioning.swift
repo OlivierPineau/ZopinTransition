@@ -87,6 +87,15 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
             tOverlayViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { overlaysOriginalAlpha[$0] = $0.opacity }
             toViews.flatMap { [$0.view] + $0.view.subviews }.map { $0.layer }.forEach { viewsOriginalAlpha[$0] = $0.opacity }
         }
+        
+        let container = transitionContext.containerView
+        let snapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
+        self.transitioningSnapshotter = snapshotter
+        
+        if hasInteractiveStart {
+            snapshotter.prepareToSnapshots()
+            hideViews()
+        }
     }
     
     func updateAnimator(using transitionContext: UIViewControllerContextTransitioning) {
@@ -94,11 +103,21 @@ public final class ZopinTransitioning: NSObject, UIViewControllerAnimatedTransit
         self.currentAnimator = animator
         currentAnimator?.startAnimation()
     }
+    
+    func cancelAnimator(using transitionContext: UIViewControllerContextTransitioning) {
+        self.currentAnimator = nil
+        applyViewsOriginalAlpha()
+    }
         
     private func buildAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating? {
-        let container = transitionContext.containerView
-        let snapshotter = ZopinSnapshotter(fViews: fromViews, fOverlayViews: fOverlayViews, tViews: toViews, tOverlayViews: tOverlayViews, container: container, isPresenting: isPresenting)
-        self.transitioningSnapshotter = snapshotter
+        guard let snapshotter = transitioningSnapshotter else { return nil }
+        
+        if hasInteractiveStart {
+            snapshotter.positionToSnapshots()
+            snapshotter.prepareFromSnapshots()
+        } else {
+            snapshotter.prepareAllSnapshots()
+        }
         
         if isPresenting {
             setupPresentationContainerAlpha(context: transitionContext)
@@ -215,7 +234,13 @@ extension ZopinTransitioning {
     private func setupContainer(context: UIViewControllerContextTransitioning) {
         guard let toVc = context.viewController(forKey: .to) else { return }
         toVc.view.frame = context.finalFrame(for: toVc)
-        context.containerView.insertSubview(toVc.view, at: 0)
+        
+        if isPresenting {
+            context.containerView.addSubview(toVc.view)
+        } else {
+            context.containerView.insertSubview(toVc.view, at: 0)
+        }
+        
         context.containerView.backgroundColor = .clear
         toVc.view.setNeedsLayout()
         toVc.view.layoutIfNeeded()

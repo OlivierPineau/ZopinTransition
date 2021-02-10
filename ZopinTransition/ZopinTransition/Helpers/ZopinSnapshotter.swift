@@ -14,6 +14,8 @@ final class ZopinSnapshotter {
     var groupedByDelays: [TimeInterval: [TransitioningView]] {
         return Dictionary(grouping: fromViews + toViews) { $0.config.relativeDelay }
     }
+    
+    private var sortedTransitioningViews = [TransitioningView]()
 
     init(fViews: [TransitioningView], fOverlayViews: [TransitioningView], tViews: [TransitioningView], tOverlayViews: [TransitioningView], container: UIView, isPresenting: Bool) {
         self.container = container
@@ -24,33 +26,51 @@ final class ZopinSnapshotter {
         let toTransitioningViews = extractViews(from: tViews, isFromView: false) + tOverlayViews
         let toMovingViews = toTransitioningViews
 
-        let sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
+        sortedTransitioningViews = (fromMovingViews + toMovingViews).sorted(by: { $0.priority < $1.priority })
+        fromViews = sortedTransitioningViews.filter { fromMovingViews.contains($0) }
+        toViews = sortedTransitioningViews.filter { toMovingViews.contains($0) }
+    }
+    
+    func prepareAllSnapshots() {
+        prepareFromSnapshots()
+        prepareToSnapshots()
+    }
+    
+    func prepareFromSnapshots() {
+        fromSnapshots = configureSnapshots(transitioningViews: fromViews)
         
-        let snapshots = createSnapshots(transitioningViews: sortedTransitioningViews)
-
-        sortedTransitioningViews.enumerated().forEach {
+        positionFromSnapshots()
+        fromSnapshots.forEach {
+            container.addSubview($0)
+        }
+        
+        toSnapshots.forEach {
+            container.addSubview($0)
+        }
+    }
+    
+    func prepareToSnapshots() {
+        toSnapshots = configureSnapshots(transitioningViews: toViews)
+        
+        positionToSnapshots()
+        toSnapshots.forEach {
+            if !isPresenting {
+                $0.layer.opacity = 0
+            }
+            container.addSubview($0)
+        }
+    }
+    
+    private func configureSnapshots(transitioningViews: [TransitioningView]) -> [UIView] {
+        let snapshots = createSnapshots(transitioningViews: transitioningViews)
+        transitioningViews.enumerated().forEach {
             guard let mask = $0.element.config.mask, let maskSnapshot = createSnapshot(transitioningView: mask) else { return }
             maskSnapshot.alpha = 1
             maskSnapshot.isHidden = false
             let snapshot = snapshots[$0.offset]
             snapshot.mask = maskSnapshot
         }
-
-        fromViews = sortedTransitioningViews.filter { fromMovingViews.contains($0) }
-        fromSnapshots = snapshots.enumerated().filter({ (index, _) -> Bool in
-            return fromViews.contains(sortedTransitioningViews[index])
-        }).map { $0.element }
-        positionFromSnapshots()
-
-        toViews = sortedTransitioningViews.filter { toMovingViews.contains($0) }
-        toSnapshots = snapshots.enumerated().filter({ (index, _) -> Bool in
-            return toViews.contains(sortedTransitioningViews[index])
-        }).map { $0.element }
-        positionToSnapshots()
-        
-        (fromSnapshots + toSnapshots).forEach {
-            container.addSubview($0)
-        }
+        return snapshots
     }
 }
 
@@ -309,7 +329,7 @@ extension ZopinSnapshotter {
         maskSnapshot.frame = CGRect(origin: container.convert(maskOrigin, to: snapshot), size: viewMask.view.size)
     }
 
-    private func positionToSnapshots() {
+    func positionToSnapshots() {
         zip(toViews, toSnapshots).forEach { (toTransitioningView, toSnapshot) in
             toSnapshot.origin = toSnapshotOrigin(toTransitioningView: toTransitioningView, toSnapshot: toSnapshot)
             positionToSnapshotMaskIfNeeded(view: toTransitioningView, snapshot: toSnapshot, views: toViews)

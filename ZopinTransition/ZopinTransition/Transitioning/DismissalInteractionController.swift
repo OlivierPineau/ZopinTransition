@@ -110,8 +110,7 @@ class DismissalInteractionController: NSObject {
         if velocity.y > 300 || (translation.y > containerMaxY / 2.0 && velocity.y > -300) {
             finish(initialSpringVelocity: springVelocity(distanceToTravel: containerMaxY - translation.y, gestureVelocity: velocity.y))
         } else {
-            delegate?.finishInteractiveTransition(with: 0, transitionContext!)
-//            cancel(initialSpringVelocity: springVelocity(distanceToTravel: -translation.y, gestureVelocity: velocity.y))
+            cancel(initialSpringVelocity: springVelocity(distanceToTravel: -translation.y, gestureVelocity: velocity.y))
         }
     }
         
@@ -201,10 +200,9 @@ class DismissalInteractionController: NSObject {
                 transitionContext.completeTransition(false)
                 self.interactionInProgress = false
                 self.enableOtherTouches()
+                self.delegate?.cancelInteractiveTransition(with: initialSpringVelocity, transitionContext)
             }
             cancellationAnimator?.startAnimation()
-//        default:
-//            delegate?.cancelInteractiveTransition(with: initialSpringVelocity, transitionContext)
         }
     }
 
