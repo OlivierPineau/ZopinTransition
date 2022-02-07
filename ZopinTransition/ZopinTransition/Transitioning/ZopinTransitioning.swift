@@ -158,6 +158,8 @@ extension ZopinTransitioning {
             return findTransitionableViewController(from: selectedViewController)
         } else if let navigationController = viewController as? UINavigationController, let topViewController = navigationController.topViewController {
             return findTransitionableViewController(from: topViewController)
+        } else if let topViewController = viewController.children.first {
+            return findTransitionableViewController(from: topViewController)
         }
 
         return nil
