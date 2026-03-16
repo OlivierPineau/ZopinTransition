@@ -49,7 +49,12 @@ extension UIView {
 
             } else {
                 let layerCopy = layer.zopinCopy(hideSubviews: hideSubviews)
-                copy.addSubview(SnapshotLayerView(snapshotLayer: layerCopy))
+                let snapshotLayerView = SnapshotLayerView(snapshotLayer: layerCopy)
+                if let visualEffectView = copy as? UIVisualEffectView {
+                    visualEffectView.contentView.addSubview(snapshotLayerView)
+                } else {
+                    copy.addSubview(snapshotLayerView)
+                }
                 offset += 1
             }
         }
